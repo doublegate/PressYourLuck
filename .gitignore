@@ -2,6 +2,7 @@
 /target/
 debug/
 release/
+*.rs.bk
 
 # Cargo lock file for binaries is typically committed, but can be ignored
 # Cargo.lock  # Uncomment if you want to ignore
@@ -18,6 +19,8 @@ release/
 .DS_Store
 Thumbs.db
 .directory
+Desktop.ini
+._*
 
 # Local configuration
 *.local
@@ -40,3 +43,7 @@ flamegraph.svg
 tarpaulin-report.html
 lcov.info
 coverage/
+
+# Generated audio assets (procedural generation makes files optional)
+assets/audio/*.wav
+assets/audio/*.ogg

@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Press Your Luck is an authentic recreation of the 1983-1986 CBS game show, built in Rust using the ggez game framework (v0.9). The game features procedurally generated audio (no external files), vector-based graphics with Canvas/Mesh rendering, and implements the complete game rules including question rounds, the Big Board, passing mechanics, and 4-Whammy elimination.
+Press Your Luck is an authentic recreation of the 1983-1986 CBS game show, built in Rust using the ggez game framework (v0.9). The game features a hybrid audio system (file-based with procedural fallback), a complete animation system with particle effects, vector-based graphics with Canvas/Mesh rendering, and implements the complete game rules including question rounds, the Big Board, passing mechanics, and 4-Whammy elimination.
 
-**Current Version**: 2.0.2
+**Current Version**: 2.1.0
 
 ## Build Commands
 
@@ -49,11 +49,19 @@ The codebase follows a modular architecture with clear separation between game l
 
 ```
 src/
-├── main.rs      # Entry point, ggez EventHandler, game loop
-├── game/mod.rs  # Game state, rules, all game logic
-├── audio/mod.rs # Procedural sound synthesis (ggez audio)
-├── gfx/mod.rs   # Big Board rendering, animations (ggez graphics)
-└── ui/mod.rs    # Overlay UI (questions, menus, game over)
+├── main.rs              # Entry point, ggez EventHandler, game loop integration
+├── game/mod.rs          # Game state, rules, all game logic
+├── audio/mod.rs         # Hybrid audio engine (file-based + procedural fallback)
+├── animation/           # Phase 2: Animation System
+│   ├── mod.rs           # Module exports
+│   ├── atlas.rs         # Sprite atlas management (grid/packed)
+│   ├── effects.rs       # Screen effects (shake, flash)
+│   ├── particles.rs     # Particle system (8 effect types)
+│   ├── player.rs        # Animation player with state machine
+│   ├── types.rs         # Animation frames, timing, loop modes
+│   └── whammy.rs        # 30 Whammy animation definitions
+├── gfx/mod.rs           # Big Board rendering (ggez graphics)
+└── ui/mod.rs            # Overlay UI (questions, menus, game over)
 ```
 
 ### Key Architectural Patterns
@@ -62,7 +70,7 @@ src/
 
 **Event-Driven Audio**: `GameState::update()` returns `Vec<AudioEvent>` which the main loop passes to `AudioEngine::handle_event()`. Audio is never triggered directly from game logic.
 
-**Procedural Audio**: All sounds are synthesized mathematically at 44.1kHz 16-bit PCM using waveform generation with ADSR envelopes. No external audio files are needed. Board tones follow an authentic 18-note musical sequence.
+**Hybrid Audio System**: Supports both file-based audio (OGG/WAV) and procedural synthesis fallback at 44.1kHz 16-bit PCM. Per-category volume controls (master, music, effects, voice, audience). Board tones follow an authentic 18-note musical sequence (D4, E4, G4, Bb4...).
 
 **State Machine**: Game flow is controlled by `GamePhase` enum (Start, Questions, Board, GameOver). The `QuestionState` and `ResultState` structs manage sub-states within phases.
 

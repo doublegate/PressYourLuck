@@ -5,6 +5,75 @@ All notable changes to Press Your Luck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2025-01-24
+
+### Added
+
+#### Phase 1: Audio System Enhancement
+- **AudioEngine** with hybrid file-based and procedural synthesis support
+- File-based audio loading supporting OGG Vorbis (primary) and WAV (fallback)
+- Automatic fallback to procedural generation when audio files are missing
+- **AudioConfig** structure with per-category volume controls:
+  - Master volume (affects all audio)
+  - Music volume (theme, board music, tension)
+  - Effects volume (board tones, cash, prize sounds)
+  - Voice volume (Whammy catchphrases)
+  - Audience volume (cheers, gasps, ambient murmur)
+- Whammy catchphrase system with 30+ mapped voice clips
+- Audience reaction system with intensity-based sound selection (Low, Medium, High, Extreme)
+- Music volume ducking during voice clip playback
+- Ambient audience murmur support (toggleable)
+- Comprehensive audio mixing with clipping prevention
+
+#### Phase 2: Animation System
+- **SpriteAtlas** (`atlas.rs`): Sprite sheet management supporting both grid-based and packed texture atlas layouts
+- **AtlasManager**: Centralized atlas loading and caching
+- **Animation Types** (`types.rs`): Frame-based animation definitions with timing, loop modes, and effect triggers
+- **AnimationBuilder**: Fluent API for constructing animations
+- **AnimationPlayer** (`player.rs`): State machine-based animation playback with:
+  - Play, pause, stop, and reset controls
+  - Loop modes (Once, Loop, PingPong, Clamp)
+  - Animation events and callbacks
+  - Playback state tracking
+- **ParticleSystem** (`particles.rs`): Visual effects system with 8 particle types:
+  - MoneyScatter (money bills flying away)
+  - ExplosionSparks (explosion spark effects)
+  - StarBurst (star burst celebration)
+  - Confetti (celebration confetti)
+  - Dust (dust cloud effects)
+  - Fire (fire particle effects)
+  - Smoke (smoke particle effects)
+  - Sparkle (shimmer/sparkle effects)
+- **ParticleEmitter**: Configurable particle spawning with burst and continuous modes
+- **ScreenEffects** (`effects.rs`): Global visual effects including:
+  - **ScreenShake**: Configurable intensity, duration, frequency, and decay
+  - **ScreenFlash**: Color-based flash with multiple modes (Quick, Slow, Pulse, Fade)
+- **WhammyAnimator** (`whammy.rs`): 30 unique Whammy animations across 4 categories:
+  - Core 5: Hammer, Pogo Stick, Roller Skating, TNT, Fang Boxing
+  - Extended 10: Boombox, UFO Abduction, Fishing, Skydiving, Cannon, Surfing, Karate, Graduation Throw, Computer, Baseball
+  - Holiday 10: Santa, Easter Bunny, Cupid, Leprechaun, Turkey, Uncle Sam, Witch, Jack-o-lantern, Pilgrim, Graduation Cap
+  - Special 5: Trap Door, Group Goodbye, Sad Walk-off, Dance, Laugh
+- **WhammyAnimationLibrary**: Animation catalog with random selection and taunt phrase mapping
+
+#### System Integration
+- Full integration of AudioEngine into main game loop
+- Full integration of animation system components (WhammyAnimator, ParticleSystem, ScreenEffects, AtlasManager)
+- Animation system mesh initialization in ggez Context
+- Extended audio event handling with ReactionIntensity support
+
+### Fixed
+- Resolved 52 compiler warnings with proper code integration
+- All animation module types properly exported and utilized
+- Proper dead code allowances for integration methods pending future features
+
+### Technical
+- 21 new unit tests for animation system components
+- Comprehensive module documentation with architecture overview
+- Board tone frequencies documented (D4, E4, G4, Bb4 sequence)
+- Audio sample rate: 44,100 Hz (CD quality)
+
+---
+
 ## [2.0.2] - 2025-01-24
 
 ### Changed
@@ -167,12 +236,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| 2.1.0 | 2025-01-24 | Phase 1 (Audio) & Phase 2 (Animation) systems, 52 warning fixes |
 | 2.0.2 | 2025-01-24 | Dependency updates (rand 0.9.2, actions v6/v5) |
 | 2.0.1 | 2025-01-24 | CI/CD fixes, clippy compliance |
 | 2.0.0 | 2025-01-24 | Framework migration to ggez 0.9, security fix |
 | 1.1.0 | 2025-01-24 | Authentic Whammy redesign, 66+ animations, holiday specials |
 | 1.0.0 | 2025-01-24 | Initial release with full game implementation |
 
+[2.1.0]: https://github.com/doublegate/PressYourLuck/releases/tag/v2.1.0
 [2.0.2]: https://github.com/doublegate/PressYourLuck/releases/tag/v2.0.2
 [2.0.1]: https://github.com/doublegate/PressYourLuck/releases/tag/v2.0.1
 [2.0.0]: https://github.com/doublegate/PressYourLuck/releases/tag/v2.0.0

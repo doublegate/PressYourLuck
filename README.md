@@ -88,23 +88,47 @@ cargo build --release
 
 ```
 src/
-├── main.rs      # Entry point, ggez EventHandler, game loop
+├── main.rs              # Entry point, ggez EventHandler, game loop integration
 ├── game/
-│   └── mod.rs   # Game state, rules, and logic
+│   └── mod.rs           # Game state, rules, and logic
 ├── audio/
-│   └── mod.rs   # Procedural sound synthesis (ggez audio)
+│   └── mod.rs           # Audio engine with file-based and procedural fallback
+├── animation/           # Phase 2: Animation System (NEW)
+│   ├── mod.rs           # Module exports and documentation
+│   ├── atlas.rs         # Sprite atlas management (grid/packed layouts)
+│   ├── effects.rs       # Screen effects (shake, flash)
+│   ├── particles.rs     # Particle system (8 effect types)
+│   ├── player.rs        # Animation player with state machine
+│   ├── types.rs         # Animation frames, timing, loop modes
+│   └── whammy.rs        # 30 Whammy animation definitions
 ├── gfx/
-│   └── mod.rs   # Rendering and animations (ggez graphics)
+│   └── mod.rs           # Rendering (ggez Canvas/Mesh graphics)
 └── ui/
-    └── mod.rs   # User interface overlays
+    └── mod.rs           # User interface overlays
 ```
 
 ## Technical Details
 
-- **Framework**: ggez 0.9 (Rust game library inspired by LÖVE2D, uses wgpu/rodio)
-- **Audio**: Procedurally generated WAV at 44.1kHz, 16-bit mono
+- **Framework**: ggez 0.9 (Rust game library inspired by LOVE2D, uses wgpu/rodio)
+- **Audio**: Hybrid system - file-based OGG/WAV with procedural fallback at 44.1kHz, 16-bit
 - **Graphics**: Vector-based rendering with Canvas/Mesh pattern
+- **Animation**: Complete animation system with sprite atlas, particle effects, screen shake/flash
 - **Platform**: Linux (primary), Windows, macOS
+
+### Audio System (Phase 1)
+- File-based sound loading (OGG Vorbis primary, WAV fallback)
+- Procedural synthesis when audio files are missing
+- Per-category volume controls (master, music, effects, voice, audience)
+- Whammy catchphrase mapping with 30+ voice clips
+- Audience reaction system with intensity-based sounds
+- Music volume ducking during voice clips
+
+### Animation System (Phase 2)
+- **Sprite Atlas**: Grid-based and packed texture atlas support
+- **Animation Player**: State machine with events, callbacks, and loop modes
+- **Particle System**: 8 effect types (MoneyScatter, ExplosionSparks, StarBurst, Confetti, Dust, Fire, Smoke, Sparkle)
+- **Screen Effects**: Shake (configurable intensity/duration) and flash (color/fade modes)
+- **Whammy Animations**: 30 programmatic animations across 4 categories (Core, Extended, Holiday, Special)
 
 ## The Whammy Character
 
