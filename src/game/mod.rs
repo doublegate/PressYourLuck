@@ -33,8 +33,7 @@
 //! - **Special**: Add-A-One, Double Your Money, Pick a Corner, etc.
 //! - **Whammy**: Lose all money and prizes
 
-use rand::seq::SliceRandom;
-use rand::Rng;
+use rand::prelude::*;
 use serde::{Deserialize, Serialize};
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -678,7 +677,7 @@ impl WhammyAnimationType {
     pub fn random_whammy_out() -> Self {
         let animations = [Self::GrimReaper, Self::FiringSquad, Self::AngelWhammy];
         *animations
-            .choose(&mut rand::thread_rng())
+            .choose(&mut rand::rng())
             .unwrap_or(&Self::GrimReaper)
     }
 
@@ -754,7 +753,7 @@ impl WhammyAnimationType {
             Self::Judge,
             Self::ClownCar,
         ];
-        *animations.choose(&mut rand::thread_rng()).unwrap()
+        *animations.choose(&mut rand::rng()).unwrap()
     }
 }
 
@@ -841,7 +840,7 @@ impl TriviaQuestion {
         choices.push(self.correct_answer.clone());
 
         // Shuffle and find correct index
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         choices.shuffle(&mut rng);
 
         let correct_index = choices
@@ -1219,9 +1218,9 @@ impl GameState {
         };
 
         // Initialize random prize indices
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         for square in &mut state.board {
-            square.current_index = rng.gen_range(0..3);
+            square.current_index = rng.random_range(0..3);
         }
 
         state
@@ -1794,7 +1793,7 @@ impl GameState {
             available = (0..all_questions.len()).collect();
         }
 
-        let idx = *available.choose(&mut rand::thread_rng()).unwrap();
+        let idx = *available.choose(&mut rand::rng()).unwrap();
         qs.used_questions.push(idx);
 
         let question = all_questions[idx].clone();
@@ -1956,7 +1955,7 @@ impl GameState {
         self.spin_speed = 1.0; // Full speed
         self.spin_decelerating = false;
         self.spin_target_square = None;
-        self.light_speed = 15.0 + rand::thread_rng().gen_range(0.0..5.0);
+        self.light_speed = 15.0 + rand::rng().random_range(0.0..5.0);
         self.message = "Press SPACE to stop!".to_string();
     }
 
