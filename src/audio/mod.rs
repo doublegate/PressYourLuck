@@ -39,24 +39,24 @@ const SAMPLE_RATE: u32 = 44100;
 /// Board tone frequencies in Hz (authentic sequence)
 /// These create the distinctive musical pattern as the light moves around the board
 const BOARD_TONES: [f32; 18] = [
-    293.66,  // D4  - Square 0 (top-left)
-    329.63,  // E4  - Square 1
-    392.00,  // G4  - Square 2
-    466.16,  // Bb4 - Square 3
-    293.66,  // D4  - Square 4
-    415.30,  // Ab4 - Square 5 (top-right)
-    349.23,  // F4  - Square 6
-    261.63,  // C4  - Square 7
-    311.13,  // Eb4 - Square 8
-    293.66,  // D4  - Square 9 (bottom-right)
-    493.88,  // B4  - Square 10
-    440.00,  // A4  - Square 11
-    277.18,  // C#4 - Square 12
-    329.63,  // E4  - Square 13
-    369.99,  // F#4 - Square 14 (bottom-left)
-    440.00,  // A4  - Square 15
-    293.66,  // D4  - Square 16
-    349.23,  // F4  - Square 17
+    293.66, // D4  - Square 0 (top-left)
+    329.63, // E4  - Square 1
+    392.00, // G4  - Square 2
+    466.16, // Bb4 - Square 3
+    293.66, // D4  - Square 4
+    415.30, // Ab4 - Square 5 (top-right)
+    349.23, // F4  - Square 6
+    261.63, // C4  - Square 7
+    311.13, // Eb4 - Square 8
+    293.66, // D4  - Square 9 (bottom-right)
+    493.88, // B4  - Square 10
+    440.00, // A4  - Square 11
+    277.18, // C#4 - Square 12
+    329.63, // E4  - Square 13
+    369.99, // F#4 - Square 14 (bottom-left)
+    440.00, // A4  - Square 15
+    293.66, // D4  - Square 16
+    349.23, // F4  - Square 17
 ];
 
 // ===============================================================================
@@ -73,6 +73,7 @@ const BOARD_TONES: [f32; 18] = [
 /// 1. **Board Tones (18)**: One for each square position
 /// 2. **Game Events**: Whammy, cash, prize, special, correct, wrong
 /// 3. **UI Sounds**: Button clicks, transitions
+#[derive(Default)]
 pub struct AudioEngine {
     /// Pre-generated board tones (one per square)
     board_tones: Vec<Option<Source>>,
@@ -163,7 +164,10 @@ impl AudioEngine {
         // Generate all sounds
         engine.generate_sounds(ctx)?;
         engine.initialized = true;
-        println!("Audio engine initialized with {} board tones", engine.board_tones.len());
+        println!(
+            "Audio engine initialized with {} board tones",
+            engine.board_tones.len()
+        );
 
         Ok(engine)
     }
@@ -263,7 +267,11 @@ impl AudioEngine {
 
     /// Play cash register sound
     fn play_cash(&mut self, ctx: &Context, big: bool) {
-        let sound = if big { &mut self.big_cash_sound } else { &mut self.cash_sound };
+        let sound = if big {
+            &mut self.big_cash_sound
+        } else {
+            &mut self.cash_sound
+        };
         if let Some(s) = sound {
             s.set_volume(0.7);
             let _ = s.play_detached(ctx);
@@ -388,32 +396,6 @@ impl AudioEngine {
     }
 }
 
-impl Default for AudioEngine {
-    fn default() -> Self {
-        Self {
-            board_tones: Vec::new(),
-            whammy_sound: None,
-            cash_sound: None,
-            big_cash_sound: None,
-            prize_sound: None,
-            special_sound: None,
-            correct_sound: None,
-            wrong_sound: None,
-            sad_trombone: None,
-            spin_added_sound: None,
-            buzz_in_sound: None,
-            winner_sound: None,
-            click_sound: None,
-            board_stop_sound: None,
-            audience_cheer_sound: None,
-            audience_gasp_sound: None,
-            tension_music: None,
-            tension_playing: false,
-            initialized: false,
-        }
-    }
-}
-
 // ===============================================================================
 // WAV FILE GENERATION
 // ===============================================================================
@@ -428,7 +410,7 @@ impl Default for AudioEngine {
 fn create_wav_header(data_size: u32) -> Vec<u8> {
     let file_size = data_size + 36;
     let byte_rate = SAMPLE_RATE * 2; // 16-bit mono
-    let block_align: u16 = 2;        // 16-bit mono
+    let block_align: u16 = 2; // 16-bit mono
 
     let mut header = Vec::with_capacity(44);
 
@@ -439,13 +421,13 @@ fn create_wav_header(data_size: u32) -> Vec<u8> {
 
     // fmt chunk
     header.extend_from_slice(b"fmt ");
-    header.extend_from_slice(&16u32.to_le_bytes());    // Chunk size
-    header.extend_from_slice(&1u16.to_le_bytes());     // PCM format
-    header.extend_from_slice(&1u16.to_le_bytes());     // Mono
+    header.extend_from_slice(&16u32.to_le_bytes()); // Chunk size
+    header.extend_from_slice(&1u16.to_le_bytes()); // PCM format
+    header.extend_from_slice(&1u16.to_le_bytes()); // Mono
     header.extend_from_slice(&SAMPLE_RATE.to_le_bytes());
     header.extend_from_slice(&byte_rate.to_le_bytes());
     header.extend_from_slice(&block_align.to_le_bytes());
-    header.extend_from_slice(&16u16.to_le_bytes());    // Bits per sample
+    header.extend_from_slice(&16u16.to_le_bytes()); // Bits per sample
 
     // data chunk
     header.extend_from_slice(b"data");
@@ -593,7 +575,9 @@ fn generate_cash_sound(big: bool) -> Vec<u8> {
         let envelope = if note_t < 0.01 {
             note_t / 0.01
         } else {
-            (1.0 - (note_t - 0.01) / (note_duration - 0.01)).max(0.0).powf(2.0)
+            (1.0 - (note_t - 0.01) / (note_duration - 0.01))
+                .max(0.0)
+                .powf(2.0)
         };
 
         let freq = notes[note_index];
@@ -603,15 +587,16 @@ fn generate_cash_sound(big: bool) -> Vec<u8> {
 
     // Add a "ching" metallic sound at the end
     let ching_start = num_samples - (SAMPLE_RATE as f32 * 0.1) as usize;
+    #[allow(clippy::needless_range_loop)]
     for i in ching_start..num_samples {
         let t = (i - ching_start) as f32 / SAMPLE_RATE as f32;
         let envelope = (1.0 - t / 0.1).max(0.0).powf(3.0);
 
         // High frequency metallic ping
-        let ching = envelope * 0.3 * (
-            (2.0 * std::f32::consts::PI * 2500.0 * t).sin() +
-            0.5 * (2.0 * std::f32::consts::PI * 3500.0 * t).sin()
-        );
+        let ching = envelope
+            * 0.3
+            * ((2.0 * std::f32::consts::PI * 2500.0 * t).sin()
+                + 0.5 * (2.0 * std::f32::consts::PI * 3500.0 * t).sin());
 
         samples[i] = (samples[i] + ching).clamp(-1.0, 1.0);
     }
@@ -651,7 +636,9 @@ fn generate_prize_sound() -> Vec<u8> {
                 let envelope = if note_t < attack {
                     note_t / attack
                 } else {
-                    (1.0 - (note_t - attack) / (dur - attack)).max(0.0).powf(0.5)
+                    (1.0 - (note_t - attack) / (dur - attack))
+                        .max(0.0)
+                        .powf(0.5)
                 };
 
                 // Brass timbre: fundamental + odd harmonics
@@ -803,10 +790,10 @@ fn generate_sad_trombone() -> Vec<u8> {
 
     // Four descending notes
     let notes = [
-        (0.0, 0.3, 311.13),    // Eb4
-        (0.35, 0.3, 277.18),   // C#4
-        (0.7, 0.3, 246.94),    // B3
-        (1.05, 0.45, 207.65),  // G#3 (held longer)
+        (0.0, 0.3, 311.13),   // Eb4
+        (0.35, 0.3, 277.18),  // C#4
+        (0.7, 0.3, 246.94),   // B3
+        (1.05, 0.45, 207.65), // G#3 (held longer)
     ];
 
     for i in 0..num_samples {
@@ -923,13 +910,13 @@ fn generate_winner_fanfare() -> Vec<u8> {
 
     // Victory melody
     let notes = [
-        (0.0, 0.2, 523.25),     // C5
-        (0.2, 0.2, 659.25),     // E5
-        (0.4, 0.2, 783.99),     // G5
-        (0.6, 0.4, 1046.50),    // C6 (held)
-        (1.0, 0.15, 783.99),    // G5
-        (1.15, 0.15, 1046.50),  // C6
-        (1.3, 0.7, 1318.51),    // E6 (finale)
+        (0.0, 0.2, 523.25),    // C5
+        (0.2, 0.2, 659.25),    // E5
+        (0.4, 0.2, 783.99),    // G5
+        (0.6, 0.4, 1046.50),   // C6 (held)
+        (1.0, 0.15, 783.99),   // G5
+        (1.15, 0.15, 1046.50), // C6
+        (1.3, 0.7, 1318.51),   // E6 (finale)
     ];
 
     for i in 0..num_samples {
@@ -1074,8 +1061,8 @@ fn generate_audience_cheer() -> Vec<u8> {
         let yeah = 0.2 * (2.0 * std::f32::consts::PI * yeah_freq * t).sin();
 
         // Layer 3: Higher frequency excitement
-        let excitement = 0.15 * (2.0 * std::f32::consts::PI * 800.0 * t).sin()
-            * (1.0 + 0.3 * (t * 30.0).sin());
+        let excitement =
+            0.15 * (2.0 * std::f32::consts::PI * 800.0 * t).sin() * (1.0 + 0.3 * (t * 30.0).sin());
 
         // Layer 4: Clapping rhythm simulation
         let clap_phase = (t * 4.0) % 1.0; // ~4 claps per second
@@ -1087,9 +1074,8 @@ fn generate_audience_cheer() -> Vec<u8> {
 
         // Mix layers with volume modulation for realism
         let volume_mod = 0.8 + 0.2 * (t * 3.0).sin();
-        let sample = envelope * volume_mod * (
-            noise1 * 0.3 + noise2 * 0.2 + yeah + excitement + clap
-        );
+        let sample =
+            envelope * volume_mod * (noise1 * 0.3 + noise2 * 0.2 + yeah + excitement + clap);
 
         samples.push(sample.clamp(-1.0, 1.0) * 0.6);
     }
@@ -1133,8 +1119,7 @@ fn generate_audience_gasp() -> Vec<u8> {
         let ah = 0.2 * (2.0 * std::f32::consts::PI * ah_freq * t).sin();
 
         // Subtle resonance
-        let resonance = 0.1 * (2.0 * std::f32::consts::PI * 600.0 * t).sin()
-            * (1.0 - progress);
+        let resonance = 0.1 * (2.0 * std::f32::consts::PI * 600.0 * t).sin() * (1.0 - progress);
 
         let sample = envelope * (breath_noise * 0.25 + oh + ah + resonance);
 
@@ -1177,7 +1162,8 @@ fn generate_tension_music() -> Vec<u8> {
         let bass = bass_envelope * 0.35 * (2.0 * std::f32::consts::PI * bass_freq * t).sin();
 
         // Octave bass for fullness (D3)
-        let bass_oct = bass_envelope * 0.15 * (2.0 * std::f32::consts::PI * bass_freq * 2.0 * t).sin();
+        let bass_oct =
+            bass_envelope * 0.15 * (2.0 * std::f32::consts::PI * bass_freq * 2.0 * t).sin();
 
         // --- SYNTH PAD (Suspenseful chord) ---
         // Dm chord: D4 (293.66), F4 (349.23), A4 (440.00)
@@ -1207,18 +1193,23 @@ fn generate_tension_music() -> Vec<u8> {
         // --- TENSION RISER (Rising tone) ---
         // Subtle rising sweep throughout the loop
         let sweep_freq = 200.0 + 300.0 * (t / duration);
-        let sweep = 0.04 * (2.0 * std::f32::consts::PI * sweep_freq * t).sin()
+        let sweep = 0.04
+            * (2.0 * std::f32::consts::PI * sweep_freq * t).sin()
             * (0.5 + 0.5 * (t / duration));
 
         // --- SYNTH STAB (On beat 2 and 4) ---
         let bar_phase = (t / (beat_duration * 4.0)) % 1.0;
-        let stab_envelope = if (bar_phase > 0.24 && bar_phase < 0.27)
-            || (bar_phase > 0.74 && bar_phase < 0.77) {
-            let local = if bar_phase > 0.5 { bar_phase - 0.74 } else { bar_phase - 0.24 };
-            (1.0 - local / 0.03).max(0.0)
-        } else {
-            0.0
-        };
+        let stab_envelope =
+            if (bar_phase > 0.24 && bar_phase < 0.27) || (bar_phase > 0.74 && bar_phase < 0.77) {
+                let local = if bar_phase > 0.5 {
+                    bar_phase - 0.74
+                } else {
+                    bar_phase - 0.24
+                };
+                (1.0 - local / 0.03).max(0.0)
+            } else {
+                0.0
+            };
         // Bb4 (466.16 Hz) for tension
         let stab = stab_envelope * 0.15 * (2.0 * std::f32::consts::PI * 466.16 * t).sin();
 

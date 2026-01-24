@@ -15,11 +15,11 @@
 //! The UI overlays on top of the main game graphics, using semi-transparent
 //! panels to maintain visibility of the colorful board underneath.
 
+use ggez::mint::Vector2;
 use ggez::{
     graphics::{Canvas, Color, DrawMode, DrawParam, Mesh, Rect, Text, TextFragment},
     Context,
 };
-use ggez::mint::Vector2;
 
 use crate::game::{GamePhase, GameState};
 
@@ -90,9 +90,7 @@ impl UiManager {
                 self.draw_question_ui(canvas, ctx, game_state, screen_w, screen_h)
             }
             GamePhase::Board => self.draw_board_ui(canvas, ctx, game_state, screen_w, screen_h),
-            GamePhase::GameOver => {
-                self.draw_game_over(canvas, ctx, game_state, screen_w, screen_h)
-            }
+            GamePhase::GameOver => self.draw_game_over(canvas, ctx, game_state, screen_w, screen_h),
         }
     }
 
@@ -160,9 +158,7 @@ impl UiManager {
 
             canvas.draw(
                 &char_text,
-                DrawParam::default()
-                    .dest([current_x, title_y])
-                    .color(color),
+                DrawParam::default().dest([current_x, title_y]).color(color),
             );
             current_x += char_w;
         }

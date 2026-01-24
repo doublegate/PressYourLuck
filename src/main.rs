@@ -176,7 +176,8 @@ impl EventHandler for PressYourLuck {
         self.audio_engine.update(ctx, delta_time)?;
 
         // Update graphics animations
-        self.graphics_renderer.update_animations(&self.game_state, delta_time);
+        self.graphics_renderer
+            .update_animations(&self.game_state, delta_time);
 
         Ok(())
     }
@@ -189,25 +190,72 @@ impl EventHandler for PressYourLuck {
         let (screen_w, screen_h) = ctx.gfx.drawable_size();
 
         // Draw game elements in Z-order (back to front)
-        self.graphics_renderer.draw_background(&mut canvas, ctx, screen_w, screen_h);
-        self.graphics_renderer.draw_header(&mut canvas, ctx, screen_w, screen_h);
-        self.graphics_renderer.draw_podiums(&mut canvas, ctx, &self.game_state, screen_w, screen_h);
-        self.graphics_renderer.draw_status_bar(&mut canvas, ctx, &self.game_state, screen_w, screen_h);
-        self.graphics_renderer.draw_big_board(&mut canvas, ctx, &self.game_state, screen_w, screen_h);
-        self.graphics_renderer.draw_center_stage(&mut canvas, ctx, &self.game_state, screen_w, screen_h);
-        self.graphics_renderer.draw_action_buttons(&mut canvas, ctx, &self.game_state, screen_w, screen_h);
-        self.graphics_renderer.draw_controls(&mut canvas, ctx, &self.game_state, screen_w, screen_h);
-        self.graphics_renderer.draw_message_display(&mut canvas, ctx, &self.game_state, screen_w, screen_h);
+        self.graphics_renderer
+            .draw_background(&mut canvas, ctx, screen_w, screen_h);
+        self.graphics_renderer
+            .draw_header(&mut canvas, ctx, screen_w, screen_h);
+        self.graphics_renderer
+            .draw_podiums(&mut canvas, ctx, &self.game_state, screen_w, screen_h);
+        self.graphics_renderer.draw_status_bar(
+            &mut canvas,
+            ctx,
+            &self.game_state,
+            screen_w,
+            screen_h,
+        );
+        self.graphics_renderer.draw_big_board(
+            &mut canvas,
+            ctx,
+            &self.game_state,
+            screen_w,
+            screen_h,
+        );
+        self.graphics_renderer.draw_center_stage(
+            &mut canvas,
+            ctx,
+            &self.game_state,
+            screen_w,
+            screen_h,
+        );
+        self.graphics_renderer.draw_action_buttons(
+            &mut canvas,
+            ctx,
+            &self.game_state,
+            screen_w,
+            screen_h,
+        );
+        self.graphics_renderer.draw_controls(
+            &mut canvas,
+            ctx,
+            &self.game_state,
+            screen_w,
+            screen_h,
+        );
+        self.graphics_renderer.draw_message_display(
+            &mut canvas,
+            ctx,
+            &self.game_state,
+            screen_w,
+            screen_h,
+        );
 
         // CRT effect overlay
-        self.graphics_renderer.draw_crt_overlay(&mut canvas, ctx, screen_w, screen_h);
+        self.graphics_renderer
+            .draw_crt_overlay(&mut canvas, ctx, screen_w, screen_h);
 
         // UI overlay
-        self.ui_manager.draw(&mut canvas, ctx, &self.game_state, screen_w, screen_h);
+        self.ui_manager
+            .draw(&mut canvas, ctx, &self.game_state, screen_w, screen_h);
 
         // Debug info in development builds
         #[cfg(debug_assertions)]
-        self.graphics_renderer.draw_debug_info(&mut canvas, ctx, &self.game_state, screen_w, screen_h);
+        self.graphics_renderer.draw_debug_info(
+            &mut canvas,
+            ctx,
+            &self.game_state,
+            screen_w,
+            screen_h,
+        );
 
         canvas.finish(ctx)?;
         Ok(())

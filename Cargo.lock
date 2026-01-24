@@ -1828,7 +1828,7 @@ dependencies = [
 
 [[package]]
 name = "press-your-luck"
-version = "1.0.0"
+version = "2.0.0"
 dependencies = [
  "fastrand",
  "ggez",

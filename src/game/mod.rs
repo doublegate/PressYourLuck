@@ -1,31 +1,31 @@
 //! # Game State Module
-//! 
+//!
 //! ## Overview
 //! This module manages all game state, rules, and logic for Press Your Luck.
 //! It implements the authentic 1983-1986 CBS game show mechanics.
-//! 
+//!
 //! ## Game Structure
-//! 
+//!
 //! ### Two-Round Format
 //! Each round consists of:
 //! 1. **Question Round**: 4 questions, players earn spins
 //! 2. **Board Round**: Players use spins on the Big Board
-//! 
+//!
 //! ### Spin Mechanics
 //! - **Earned Spins**: Won through correct answers or board bonuses
 //! - **Passed Spins**: Received from opponents, must be used first
 //! - Players can pass ONLY earned spins (not passed spins)
-//! 
+//!
 //! ### Passing Rules (Authentic)
 //! - Pass to the leader
 //! - If you're leading, pass to 2nd place
 //! - If tied for lead, pass to the tied opponent
-//! 
+//!
 //! ### Whammy Rules
 //! - Landing on Whammy: Score resets to $0
 //! - 4th Whammy: Player is eliminated ("Whammied out")
 //! - Passed spins convert to earned spins when hit by Whammy
-//! 
+//!
 //! ## Prize Types
 //! - **Cash**: Money values ($100 - $5000)
 //! - **Cash + Spin**: Money plus extra spin
@@ -132,15 +132,9 @@ pub enum GamePhase {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum PrizeType {
     /// Cash amount with optional bonus spin
-    Cash {
-        value: u32,
-        bonus_spin: bool,
-    },
+    Cash { value: u32, bonus_spin: bool },
     /// Physical prize with name and value
-    Prize {
-        name: String,
-        value: u32,
-    },
+    Prize { name: String, value: u32 },
     /// The dreaded Whammy!
     Whammy,
     /// Special action square
@@ -157,6 +151,7 @@ pub enum SpecialAction {
     /// - $0 becomes $10 (authentic behavior)
     /// - $500 becomes $1,500
     /// - $1,000 becomes $11,000
+    ///
     /// Premiered: Episode 508 (September 5, 1985)
     AddAOne,
 
@@ -199,7 +194,7 @@ pub enum SpecialAction {
 // ═══════════════════════════════════════════════════════════════════════════
 
 /// A single square on the Big Board
-/// 
+///
 /// Each square cycles through 3 different prizes
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BoardSquare {
@@ -226,39 +221,51 @@ impl Prize {
     /// Create a new cash prize
     pub fn cash(value: u32) -> Self {
         Self {
-            prize_type: PrizeType::Cash { value, bonus_spin: false },
+            prize_type: PrizeType::Cash {
+                value,
+                bonus_spin: false,
+            },
             display_main: format!("${}", Self::format_money(value)),
             display_sub: None,
         }
     }
-    
+
     /// Create a cash prize with bonus spin
     pub fn cash_with_spin(value: u32) -> Self {
         Self {
-            prize_type: PrizeType::Cash { value, bonus_spin: true },
+            prize_type: PrizeType::Cash {
+                value,
+                bonus_spin: true,
+            },
             display_main: format!("${}", Self::format_money(value)),
             display_sub: Some("+SPIN".to_string()),
         }
     }
-    
+
     /// Create a big bucks prize (special display)
     pub fn big_bucks(value: u32) -> Self {
         Self {
-            prize_type: PrizeType::Cash { value, bonus_spin: false },
+            prize_type: PrizeType::Cash {
+                value,
+                bonus_spin: false,
+            },
             display_main: "BIG".to_string(),
             display_sub: Some("BUCKS!".to_string()),
         }
     }
-    
-    /// Create a physical prize
-    pub fn prize(name: &str, value: u32, display: &str, sub: Option<&str>) -> Self {
+
+    /// Create a physical prize item
+    pub fn physical_prize(name: &str, value: u32, display: &str, sub: Option<&str>) -> Self {
         Self {
-            prize_type: PrizeType::Prize { name: name.to_string(), value },
+            prize_type: PrizeType::Prize {
+                name: name.to_string(),
+                value,
+            },
             display_main: display.to_string(),
             display_sub: sub.map(String::from),
         }
     }
-    
+
     /// Create a Whammy
     pub fn whammy() -> Self {
         Self {
@@ -267,7 +274,7 @@ impl Prize {
             display_sub: None,
         }
     }
-    
+
     /// Create a special action prize
     pub fn special(action: SpecialAction, main: &str, sub: Option<&str>) -> Self {
         Self {
@@ -276,7 +283,7 @@ impl Prize {
             display_sub: sub.map(String::from),
         }
     }
-    
+
     /// Format money with commas
     fn format_money(value: u32) -> String {
         if value >= 1000 {
@@ -311,8 +318,8 @@ pub struct Contestant {
 }
 
 impl Contestant {
-    /// Create a new contestant
-    pub fn new(name: &str, color: (u8, u8, u8)) -> Self {
+    /// Create a new contestant with a name and display color
+    pub fn create(name: &str, color: (u8, u8, u8)) -> Self {
         Self {
             name: name.to_string(),
             score: 0,
@@ -323,12 +330,12 @@ impl Contestant {
             color,
         }
     }
-    
+
     /// Get total available spins
     pub fn total_spins(&self) -> u32 {
         self.earned_spins + self.passed_spins
     }
-    
+
     /// Reset for new game
     pub fn reset(&mut self) {
         self.score = 0;
@@ -348,6 +355,7 @@ impl Contestant {
 /// Animations by Savage Steve Holland, personally selected by director Bill Carruthers.
 /// 79 total animations were used during the show's run (66 regular, 13 special occasion).
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum WhammyAnimationType {
     // ═══════════════════════════════════════════════════════════════════════
     // SET 1 (September 1983) - Original pilot animations
@@ -669,18 +677,24 @@ impl WhammyAnimationType {
     /// Pick a random Whammy-out animation (for 4th Whammy elimination)
     pub fn random_whammy_out() -> Self {
         let animations = [Self::GrimReaper, Self::FiringSquad, Self::AngelWhammy];
-        *animations.choose(&mut rand::thread_rng()).unwrap_or(&Self::GrimReaper)
+        *animations
+            .choose(&mut rand::thread_rng())
+            .unwrap_or(&Self::GrimReaper)
     }
 
     /// Pick a random animation (weighted towards classic favorites)
     pub fn random() -> Self {
         let animations = [
             // Set 1 - Original classics (higher weight)
-            Self::Hammer, Self::Hammer,
-            Self::Pogo, Self::Pogo,
-            Self::TNT, Self::TNT,
+            Self::Hammer,
+            Self::Hammer,
+            Self::Pogo,
+            Self::Pogo,
+            Self::TNT,
+            Self::TNT,
             Self::LawnMower,
-            Self::Fang, Self::Fang,
+            Self::Fang,
+            Self::Fang,
             Self::Dance,
             Self::Hula,
             Self::Jaws,
@@ -703,7 +717,8 @@ impl WhammyAnimationType {
             // Set 4-5
             Self::UFO,
             Self::MichaelJackson,
-            Self::Breakdancing, Self::Breakdancing, // Fan favorite
+            Self::Breakdancing,
+            Self::Breakdancing, // Fan favorite
             Self::Picnic,
             Self::BoyGeorge,
             Self::WaterSkiing,
@@ -712,7 +727,8 @@ impl WhammyAnimationType {
             Self::Weightlifter,
             Self::PizzaGuy,
             Self::Umpire,
-            Self::Elvis, Self::Elvis, // Fan favorite
+            Self::Elvis,
+            Self::Elvis, // Fan favorite
             Self::FootballPlayer,
             // Set 7-8
             Self::Supremes,
@@ -823,15 +839,16 @@ impl TriviaQuestion {
     pub fn get_shuffled_choices(&self) -> (Vec<String>, usize) {
         let mut choices: Vec<String> = self.wrong_answers.clone();
         choices.push(self.correct_answer.clone());
-        
+
         // Shuffle and find correct index
         let mut rng = rand::thread_rng();
         choices.shuffle(&mut rng);
-        
-        let correct_index = choices.iter()
+
+        let correct_index = choices
+            .iter()
             .position(|c| c == &self.correct_answer)
             .unwrap();
-        
+
         (choices, correct_index)
     }
 }
@@ -842,7 +859,11 @@ pub fn get_trivia_questions() -> Vec<TriviaQuestion> {
         TriviaQuestion {
             question: "What planet is known as the Red Planet?".to_string(),
             correct_answer: "Mars".to_string(),
-            wrong_answers: vec!["Venus".to_string(), "Jupiter".to_string(), "Saturn".to_string()],
+            wrong_answers: vec![
+                "Venus".to_string(),
+                "Jupiter".to_string(),
+                "Saturn".to_string(),
+            ],
         },
         TriviaQuestion {
             question: "How many sides does a hexagon have?".to_string(),
@@ -852,7 +873,11 @@ pub fn get_trivia_questions() -> Vec<TriviaQuestion> {
         TriviaQuestion {
             question: "What is the capital of France?".to_string(),
             correct_answer: "Paris".to_string(),
-            wrong_answers: vec!["London".to_string(), "Rome".to_string(), "Berlin".to_string()],
+            wrong_answers: vec![
+                "London".to_string(),
+                "Rome".to_string(),
+                "Berlin".to_string(),
+            ],
         },
         TriviaQuestion {
             question: "In what year did World War II end?".to_string(),
@@ -862,12 +887,20 @@ pub fn get_trivia_questions() -> Vec<TriviaQuestion> {
         TriviaQuestion {
             question: "What is the largest mammal?".to_string(),
             correct_answer: "Blue Whale".to_string(),
-            wrong_answers: vec!["Elephant".to_string(), "Giraffe".to_string(), "Hippopotamus".to_string()],
+            wrong_answers: vec![
+                "Elephant".to_string(),
+                "Giraffe".to_string(),
+                "Hippopotamus".to_string(),
+            ],
         },
         TriviaQuestion {
             question: "Who painted the Mona Lisa?".to_string(),
             correct_answer: "Leonardo da Vinci".to_string(),
-            wrong_answers: vec!["Michelangelo".to_string(), "Picasso".to_string(), "Van Gogh".to_string()],
+            wrong_answers: vec![
+                "Michelangelo".to_string(),
+                "Picasso".to_string(),
+                "Van Gogh".to_string(),
+            ],
         },
         TriviaQuestion {
             question: "What is the chemical symbol for gold?".to_string(),
@@ -882,12 +915,20 @@ pub fn get_trivia_questions() -> Vec<TriviaQuestion> {
         TriviaQuestion {
             question: "What is the largest ocean?".to_string(),
             correct_answer: "Pacific".to_string(),
-            wrong_answers: vec!["Atlantic".to_string(), "Indian".to_string(), "Arctic".to_string()],
+            wrong_answers: vec![
+                "Atlantic".to_string(),
+                "Indian".to_string(),
+                "Arctic".to_string(),
+            ],
         },
         TriviaQuestion {
             question: "Who wrote Romeo and Juliet?".to_string(),
             correct_answer: "Shakespeare".to_string(),
-            wrong_answers: vec!["Dickens".to_string(), "Hemingway".to_string(), "Twain".to_string()],
+            wrong_answers: vec![
+                "Dickens".to_string(),
+                "Hemingway".to_string(),
+                "Twain".to_string(),
+            ],
         },
         TriviaQuestion {
             question: "What is the square root of 144?".to_string(),
@@ -897,7 +938,11 @@ pub fn get_trivia_questions() -> Vec<TriviaQuestion> {
         TriviaQuestion {
             question: "What gas do plants absorb from the atmosphere?".to_string(),
             correct_answer: "Carbon Dioxide".to_string(),
-            wrong_answers: vec!["Oxygen".to_string(), "Nitrogen".to_string(), "Helium".to_string()],
+            wrong_answers: vec![
+                "Oxygen".to_string(),
+                "Nitrogen".to_string(),
+                "Helium".to_string(),
+            ],
         },
         TriviaQuestion {
             question: "How many stripes are on the American flag?".to_string(),
@@ -907,12 +952,20 @@ pub fn get_trivia_questions() -> Vec<TriviaQuestion> {
         TriviaQuestion {
             question: "What is the hardest natural substance?".to_string(),
             correct_answer: "Diamond".to_string(),
-            wrong_answers: vec!["Gold".to_string(), "Iron".to_string(), "Platinum".to_string()],
+            wrong_answers: vec![
+                "Gold".to_string(),
+                "Iron".to_string(),
+                "Platinum".to_string(),
+            ],
         },
         TriviaQuestion {
             question: "Who invented the telephone?".to_string(),
             correct_answer: "Alexander Graham Bell".to_string(),
-            wrong_answers: vec!["Thomas Edison".to_string(), "Nikola Tesla".to_string(), "Benjamin Franklin".to_string()],
+            wrong_answers: vec![
+                "Thomas Edison".to_string(),
+                "Nikola Tesla".to_string(),
+                "Benjamin Franklin".to_string(),
+            ],
         },
         TriviaQuestion {
             question: "What is the smallest planet in our solar system?".to_string(),
@@ -927,12 +980,20 @@ pub fn get_trivia_questions() -> Vec<TriviaQuestion> {
         TriviaQuestion {
             question: "What is the largest organ in the human body?".to_string(),
             correct_answer: "Skin".to_string(),
-            wrong_answers: vec!["Liver".to_string(), "Brain".to_string(), "Heart".to_string()],
+            wrong_answers: vec![
+                "Liver".to_string(),
+                "Brain".to_string(),
+                "Heart".to_string(),
+            ],
         },
         TriviaQuestion {
             question: "In what city is the Eiffel Tower located?".to_string(),
             correct_answer: "Paris".to_string(),
-            wrong_answers: vec!["London".to_string(), "Rome".to_string(), "Madrid".to_string()],
+            wrong_answers: vec![
+                "London".to_string(),
+                "Rome".to_string(),
+                "Madrid".to_string(),
+            ],
         },
         TriviaQuestion {
             question: "What is the boiling point of water in Fahrenheit?".to_string(),
@@ -1035,13 +1096,27 @@ impl Default for ResultState {
 /// position-based special effects (corners, Big Bucks target, etc.)
 pub const BOARD_POSITIONS: [(u8, u8); 18] = [
     // Top row (left to right)
-    (0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0),
+    (0, 0),
+    (1, 0),
+    (2, 0),
+    (3, 0),
+    (4, 0),
+    (5, 0),
     // Right column (top to bottom)
-    (5, 1), (5, 2), (5, 3),
+    (5, 1),
+    (5, 2),
+    (5, 3),
     // Bottom row (right to left)
-    (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (0, 4),
+    (5, 4),
+    (4, 4),
+    (3, 4),
+    (2, 4),
+    (1, 4),
+    (0, 4),
     // Left column (bottom to top)
-    (0, 3), (0, 2), (0, 1),
+    (0, 3),
+    (0, 2),
+    (0, 1),
 ];
 
 /// Corner square indices for Pick a Corner special action
@@ -1119,17 +1194,17 @@ impl GameState {
             phase: GamePhase::Start,
             round: 1,
             contestants: [
-                Contestant::new("PLAYER 1", (255, 100, 100)),  // Red
-                Contestant::new("PLAYER 2", (100, 255, 100)),  // Green
-                Contestant::new("PLAYER 3", (100, 100, 255)),  // Blue
+                Contestant::create("PLAYER 1", (255, 100, 100)), // Red
+                Contestant::create("PLAYER 2", (100, 255, 100)), // Green
+                Contestant::create("PLAYER 3", (100, 100, 255)), // Blue
             ],
             current_player: 0,
             board: Self::create_round1_board(),
             lit_square: 0,
             is_spinning: false,
-            light_speed: 15.0,  // Squares per second
+            light_speed: 15.0, // Squares per second
             light_timer: 0.0,
-            spin_speed: 0.0,     // Normalized spin speed (0.0 = stopped, 1.0 = full)
+            spin_speed: 0.0, // Normalized spin speed (0.0 = stopped, 1.0 = full)
             spin_decelerating: false,
             spin_target_square: None,
             rotation_timer: 0.0,
@@ -1142,16 +1217,16 @@ impl GameState {
             awaiting_special_choice: false,
             trivia_questions: get_trivia_questions(),
         };
-        
+
         // Initialize random prize indices
         let mut rng = rand::thread_rng();
         for square in &mut state.board {
             square.current_index = rng.gen_range(0..3);
         }
-        
+
         state
     }
-    
+
     /// Create Round 1 board prizes (authentic 1983-1986 CBS values)
     ///
     /// Round 1 prize values: $100-$1,250, with Big Bucks always in square #12
@@ -1170,11 +1245,7 @@ impl GameState {
             },
             // Square 1
             BoardSquare {
-                prizes: [
-                    Prize::cash(400),
-                    Prize::cash(750),
-                    Prize::whammy(),
-                ],
+                prizes: [Prize::cash(400), Prize::cash(750), Prize::whammy()],
                 current_index: 0,
                 is_active: false,
             },
@@ -1222,21 +1293,13 @@ impl GameState {
             },
             // Square 6 - Pick a Corner appears here in Round 2
             BoardSquare {
-                prizes: [
-                    Prize::whammy(),
-                    Prize::cash(350),
-                    Prize::cash(1000),
-                ],
+                prizes: [Prize::whammy(), Prize::cash(350), Prize::cash(1000)],
                 current_index: 0,
                 is_active: false,
             },
             // Square 7
             BoardSquare {
-                prizes: [
-                    Prize::cash(600),
-                    Prize::whammy(),
-                    Prize::cash(450),
-                ],
+                prizes: [Prize::cash(600), Prize::whammy(), Prize::cash(450)],
                 current_index: 0,
                 is_active: false,
             },
@@ -1262,21 +1325,13 @@ impl GameState {
             },
             // Square 10
             BoardSquare {
-                prizes: [
-                    Prize::whammy(),
-                    Prize::cash(550),
-                    Prize::cash(900),
-                ],
+                prizes: [Prize::whammy(), Prize::cash(550), Prize::cash(900)],
                 current_index: 0,
                 is_active: false,
             },
             // Square 11
             BoardSquare {
-                prizes: [
-                    Prize::cash(1250),
-                    Prize::whammy(),
-                    Prize::cash(650),
-                ],
+                prizes: [Prize::cash(1250), Prize::whammy(), Prize::cash(650)],
                 current_index: 0,
                 is_active: false,
             },
@@ -1293,11 +1348,7 @@ impl GameState {
             },
             // Square 13
             BoardSquare {
-                prizes: [
-                    Prize::whammy(),
-                    Prize::cash(700),
-                    Prize::cash(450),
-                ],
+                prizes: [Prize::whammy(), Prize::cash(700), Prize::cash(450)],
                 current_index: 0,
                 is_active: false,
             },
@@ -1313,11 +1364,7 @@ impl GameState {
             },
             // Square 15
             BoardSquare {
-                prizes: [
-                    Prize::cash(600),
-                    Prize::whammy(),
-                    Prize::cash(850),
-                ],
+                prizes: [Prize::cash(600), Prize::whammy(), Prize::cash(850)],
                 current_index: 0,
                 is_active: false,
             },
@@ -1333,17 +1380,13 @@ impl GameState {
             },
             // Square 17
             BoardSquare {
-                prizes: [
-                    Prize::cash(400),
-                    Prize::cash(1100),
-                    Prize::whammy(),
-                ],
+                prizes: [Prize::cash(400), Prize::cash(1100), Prize::whammy()],
                 current_index: 0,
                 is_active: false,
             },
         ]
     }
-    
+
     /// Create Round 2 board prizes (authentic 1983-1986 CBS values)
     ///
     /// Round 2 prize values: $1,500-$5,000+, with authentic special squares.
@@ -1354,11 +1397,7 @@ impl GameState {
         [
             // Square 0 - Top left corner (Pick a Corner option)
             BoardSquare {
-                prizes: [
-                    Prize::whammy(),
-                    Prize::cash(1500),
-                    Prize::cash(2000),
-                ],
+                prizes: [Prize::whammy(), Prize::cash(1500), Prize::cash(2000)],
                 current_index: 0,
                 is_active: false,
             },
@@ -1429,7 +1468,7 @@ impl GameState {
             // Square 7 - PRIZE: New Car (authentic 1980s car value ~$4,500)
             BoardSquare {
                 prizes: [
-                    Prize::prize("Chevy Cavalier", 4500, "NEW CAR!", Some("CHEVY")),
+                    Prize::physical_prize("Chevy Cavalier", 4500, "NEW CAR!", Some("CHEVY")),
                     Prize::whammy(),
                     Prize::cash_with_spin(3000),
                 ],
@@ -1470,7 +1509,7 @@ impl GameState {
             // Square 11 - PRIZE: Hawaii Trip
             BoardSquare {
                 prizes: [
-                    Prize::prize("Trip to Hawaii", 3500, "HAWAII", Some("TRIP!")),
+                    Prize::physical_prize("Trip to Hawaii", 3500, "HAWAII", Some("TRIP!")),
                     Prize::cash(2000),
                     Prize::whammy(),
                 ],
@@ -1491,7 +1530,11 @@ impl GameState {
             // Square 13 - $2000 OR LOSE ONE WHAMMY
             BoardSquare {
                 prizes: [
-                    Prize::special(SpecialAction::TwoThousandOrLoseWhammy, "$2,000 OR", Some("LOSE 1 W")),
+                    Prize::special(
+                        SpecialAction::TwoThousandOrLoseWhammy,
+                        "$2,000 OR",
+                        Some("LOSE 1 W"),
+                    ),
                     Prize::whammy(),
                     Prize::cash(2750),
                 ],
@@ -1511,7 +1554,7 @@ impl GameState {
             // Square 15 - PRIZE: Bahamas Cruise
             BoardSquare {
                 prizes: [
-                    Prize::prize("Bahamas Cruise", 3000, "CRUISE!", Some("BAHAMAS")),
+                    Prize::physical_prize("Bahamas Cruise", 3000, "CRUISE!", Some("BAHAMAS")),
                     Prize::whammy(),
                     Prize::cash_with_spin(2000),
                 ],
@@ -1540,7 +1583,7 @@ impl GameState {
             },
         ]
     }
-    
+
     /// Handle input action and return audio events to play
     pub fn handle_input(&mut self, action: InputAction) -> Vec<AudioEvent> {
         match action {
@@ -1573,14 +1616,14 @@ impl GameState {
                 self.handle_continue();
                 Vec::new()
             }
-            InputAction::Quit => Vec::new(),  // Handled in main
+            InputAction::Quit => Vec::new(), // Handled in main
         }
     }
-    
+
     /// Update game state, returns audio events
     pub fn update(&mut self, delta_time: f32) -> Vec<AudioEvent> {
         let mut audio_events = Vec::new();
-        
+
         match self.phase {
             GamePhase::Questions => {
                 self.update_questions(delta_time, &mut audio_events);
@@ -1590,10 +1633,10 @@ impl GameState {
             }
             _ => {}
         }
-        
+
         audio_events
     }
-    
+
     /// Update question round
     fn update_questions(&mut self, delta_time: f32, audio_events: &mut Vec<AudioEvent>) {
         let qs = &mut self.question_state;
@@ -1622,7 +1665,7 @@ impl GameState {
             }
         }
     }
-    
+
     /// Update board round
     fn update_board(&mut self, delta_time: f32, audio_events: &mut Vec<AudioEvent>) {
         // Update prize rotation (every second)
@@ -1690,7 +1733,7 @@ impl GameState {
                 }
             }
         }
-        
+
         // Update Whammy animation
         if self.whammy_animation.active {
             self.whammy_animation.update(delta_time);
@@ -1698,7 +1741,7 @@ impl GameState {
                 self.check_turn_end();
             }
         }
-        
+
         // Update result display
         if self.result_state.showing {
             self.result_state.timer -= delta_time;
@@ -1708,7 +1751,7 @@ impl GameState {
             }
         }
     }
-    
+
     /// Start a new game
     fn start_game(&mut self) {
         // Reset all contestants
@@ -1734,29 +1777,29 @@ impl GameState {
         // Start first question
         self.start_next_question();
     }
-    
+
     /// Start the next trivia question
     fn start_next_question(&mut self) {
         let all_questions = &self.trivia_questions;
         let qs = &mut self.question_state;
-        
+
         // Find an unused question
         let mut available: Vec<usize> = (0..all_questions.len())
             .filter(|i| !qs.used_questions.contains(i))
             .collect();
-        
+
         if available.is_empty() {
             // All questions used, reset
             qs.used_questions.clear();
             available = (0..all_questions.len()).collect();
         }
-        
+
         let idx = *available.choose(&mut rand::thread_rng()).unwrap();
         qs.used_questions.push(idx);
-        
+
         let question = all_questions[idx].clone();
         let (choices, correct_idx) = question.get_shuffled_choices();
-        
+
         qs.current_question = Some(question);
         qs.choices = choices;
         qs.correct_index = correct_idx;
@@ -1766,31 +1809,31 @@ impl GameState {
         qs.answer_revealed = false;
         qs.buzzed_player = None;
         qs.questions_this_round += 1;
-        
+
         self.message = "Buzz in for 3 spins, or wait for multiple choice!".to_string();
     }
-    
+
     /// Handle buzz in
     fn handle_buzz_in(&mut self) {
         if self.phase != GamePhase::Questions {
             return;
         }
-        
+
         let qs = &mut self.question_state;
         if !qs.waiting_for_buzz || qs.answer_revealed {
             return;
         }
-        
+
         qs.waiting_for_buzz = false;
         qs.showing_choices = true;
         qs.buzzed_player = Some(self.current_player);
-        
+
         self.message = format!(
             "{} buzzed in! Select your answer (1-4).",
             self.contestants[self.current_player].name
         );
     }
-    
+
     /// Handle answer selection and return audio events
     fn handle_answer(&mut self, answer_idx: usize) -> Vec<AudioEvent> {
         if self.phase != GamePhase::Questions {
@@ -1815,10 +1858,7 @@ impl GameState {
             // Buzz-in: 3 spins if correct
             if correct {
                 self.contestants[buzzed].earned_spins += 3;
-                self.message = format!(
-                    "CORRECT! {} earns 3 spins!",
-                    self.contestants[buzzed].name
-                );
+                self.message = format!("CORRECT! {} earns 3 spins!", self.contestants[buzzed].name);
             } else {
                 self.message = format!(
                     "Sorry, that's wrong! The answer was: {}",
@@ -1844,7 +1884,7 @@ impl GameState {
 
         vec![audio_event]
     }
-    
+
     /// Handle continue action
     fn handle_continue(&mut self) {
         match self.phase {
@@ -1861,19 +1901,20 @@ impl GameState {
             }
             GamePhase::Board => {
                 // Continue after result display
-                if !self.is_spinning && !self.whammy_animation.active && !self.result_state.showing {
+                if !self.is_spinning && !self.whammy_animation.active && !self.result_state.showing
+                {
                     self.check_turn_end();
                 }
             }
             _ => {}
         }
     }
-    
+
     /// Start the board round
     fn start_board_round(&mut self) {
         self.phase = GamePhase::Board;
         self.question_state.questions_this_round = 0;
-        
+
         // Find player with lowest score to go first
         let mut lowest_idx = 0;
         let mut lowest_spins = u32::MAX;
@@ -1884,41 +1925,41 @@ impl GameState {
             }
         }
         self.current_player = lowest_idx;
-        
+
         // Update board for round 2 if needed
         if self.round == 2 {
             self.board = Self::create_round2_board();
         }
-        
+
         self.update_board_message();
     }
-    
+
     /// Start spinning the board
     fn start_spin(&mut self) {
         if self.phase != GamePhase::Board || self.is_spinning {
             return;
         }
-        
+
         let player = &self.contestants[self.current_player];
         if player.eliminated || player.total_spins() == 0 {
             return;
         }
-        
+
         // Deduct spin (use passed first)
         if self.contestants[self.current_player].passed_spins > 0 {
             self.contestants[self.current_player].passed_spins -= 1;
         } else {
             self.contestants[self.current_player].earned_spins -= 1;
         }
-        
+
         self.is_spinning = true;
-        self.spin_speed = 1.0;  // Full speed
+        self.spin_speed = 1.0; // Full speed
         self.spin_decelerating = false;
         self.spin_target_square = None;
         self.light_speed = 15.0 + rand::thread_rng().gen_range(0.0..5.0);
         self.message = "Press SPACE to stop!".to_string();
     }
-    
+
     /// Stop spinning and process result
     fn stop_spin(&mut self) -> Vec<AudioEvent> {
         if !self.is_spinning || self.spin_decelerating {
@@ -1950,7 +1991,7 @@ impl GameState {
         if is_corner {
             // Corner squares are at grid positions (0,0), (5,0), (5,4), (0,4)
             // This could be used for special corner-landing bonuses
-            let _corner_pos = pos;  // Available for future corner-specific features
+            let _corner_pos = pos; // Available for future corner-specific features
         }
 
         // Add prize processing events
@@ -1976,7 +2017,9 @@ impl GameState {
                 }
 
                 // Big cash sound for amounts >= $1000
-                audio_events.push(AudioEvent::CashSound { big: *value >= 1000 });
+                audio_events.push(AudioEvent::CashSound {
+                    big: *value >= 1000,
+                });
 
                 // Audience cheers for big wins ($2000+)
                 if *value >= 2000 {
@@ -1986,7 +2029,11 @@ impl GameState {
                 self.result_state = ResultState {
                     showing: true,
                     main_text: prize.display_main.clone(),
-                    sub_text: if *bonus_spin { "+ 1 SPIN!".to_string() } else { String::new() },
+                    sub_text: if *bonus_spin {
+                        "+ 1 SPIN!".to_string()
+                    } else {
+                        String::new()
+                    },
                     timer: 2.0,
                 };
 
@@ -2037,18 +2084,13 @@ impl GameState {
                     self.whammy_animation.start_whammy_out();
                     player.eliminated = true;
                     audio_events.push(AudioEvent::SadTrombone);
-                    self.message = format!(
-                        "WHAMMY! {} is OUT with 4 Whammies!",
-                        player.name
-                    );
+                    self.message = format!("WHAMMY! {} is OUT with 4 Whammies!", player.name);
                 } else {
                     // Start regular random Whammy animation
                     self.whammy_animation.start_random();
                     self.message = format!(
                         "WHAMMY! {} loses ${} (Whammy #{})!",
-                        player.name,
-                        old_score,
-                        player.whammies
+                        player.name, old_score, player.whammies
                     );
                 }
             }
@@ -2062,7 +2104,7 @@ impl GameState {
 
         audio_events
     }
-    
+
     /// Process special action (authentic 1983-1986 CBS mechanics)
     /// Returns audio events to play
     fn process_special_action(&mut self, action: SpecialAction) -> Vec<AudioEvent> {
@@ -2077,7 +2119,7 @@ impl GameState {
                 // $1,000 becomes $11,000
                 let old_score = player.score;
                 let new_score = if old_score == 0 {
-                    10  // Authentic: $0 becomes $10
+                    10 // Authentic: $0 becomes $10
                 } else {
                     let digits = (old_score as f64).log10() as u32 + 1;
                     let multiplier = 10u32.pow(digits);
@@ -2085,7 +2127,9 @@ impl GameState {
                 };
                 player.score = new_score;
 
-                audio_events.push(AudioEvent::CashSound { big: new_score >= 10000 });
+                audio_events.push(AudioEvent::CashSound {
+                    big: new_score >= 10000,
+                });
 
                 self.result_state = ResultState {
                     showing: true,
@@ -2147,7 +2191,8 @@ impl GameState {
 
                 // Verify all corner squares are valid using is_corner_square
                 // and show their grid positions from BOARD_POSITIONS
-                let corner_info: Vec<String> = CORNER_SQUARES.iter()
+                let corner_info: Vec<String> = CORNER_SQUARES
+                    .iter()
                     .enumerate()
                     .filter(|(_, &idx)| is_corner_square(idx))
                     .map(|(num, &idx)| {
@@ -2169,7 +2214,9 @@ impl GameState {
                 player.score *= 2;
                 player.earned_spins += 1;
 
-                audio_events.push(AudioEvent::CashSound { big: player.score >= 5000 });
+                audio_events.push(AudioEvent::CashSound {
+                    big: player.score >= 5000,
+                });
                 audio_events.push(AudioEvent::SpinAddedBell);
 
                 self.result_state = ResultState {
@@ -2225,15 +2272,14 @@ impl GameState {
                     timer: 2.5,
                 };
 
-                self.message = format!(
-                    "BIG BUCKS! {} wins ${}!",
-                    player.name, big_bucks_value
-                );
+                self.message = format!("BIG BUCKS! {} wins ${}!", player.name, big_bucks_value);
             }
 
             SpecialAction::TakeTheLead => {
                 // Take the Lead + One Spin: Match the leader's score + 1 spin
-                let leader_score = self.contestants.iter()
+                let leader_score = self
+                    .contestants
+                    .iter()
                     .filter(|c| !c.eliminated)
                     .map(|c| c.score)
                     .max()
@@ -2246,7 +2292,9 @@ impl GameState {
                     player.score = leader_score;
                     player.earned_spins += 1;
 
-                    audio_events.push(AudioEvent::CashSound { big: amount_added >= 1000 });
+                    audio_events.push(AudioEvent::CashSound {
+                        big: amount_added >= 1000,
+                    });
                     audio_events.push(AudioEvent::SpinAddedBell);
 
                     self.result_state = ResultState {
@@ -2283,7 +2331,7 @@ impl GameState {
 
         audio_events
     }
-    
+
     /// Handle corner selection and return audio events
     fn handle_corner_selection(&mut self, corner: usize) -> Vec<AudioEvent> {
         if !self.awaiting_corner_selection || corner > 3 {
@@ -2301,7 +2349,7 @@ impl GameState {
 
         self.process_prize(prize)
     }
-    
+
     /// Handle special choice ($2000 or Lose Whammy) and return audio events
     fn handle_special_choice(&mut self, choice: usize) -> Vec<AudioEvent> {
         if !self.awaiting_special_choice {
@@ -2332,32 +2380,32 @@ impl GameState {
                 timer: 2.0,
             };
             self.message = format!("{} loses a Whammy!", player.name);
-            vec![AudioEvent::CorrectSound]  // Happy chime for removing a whammy
+            vec![AudioEvent::CorrectSound] // Happy chime for removing a whammy
         }
     }
-    
+
     /// Handle passing spins
     fn handle_pass(&mut self) {
         if self.phase != GamePhase::Board || self.is_spinning {
             return;
         }
-        
+
         let player = &self.contestants[self.current_player];
         if player.earned_spins == 0 {
             self.message = "No earned spins to pass!".to_string();
             return;
         }
-        
+
         // Find pass target
         if let Some(target) = self.find_pass_target() {
             let spins_to_pass = self.contestants[self.current_player].earned_spins;
-            
+
             self.contestants[target].passed_spins += spins_to_pass;
             self.contestants[self.current_player].earned_spins = 0;
-            
+
             let player_name = self.contestants[self.current_player].name.clone();
             let target_name = self.contestants[target].name.clone();
-            
+
             self.message = format!(
                 "{} passes {} spin{} to {}!",
                 player_name,
@@ -2365,36 +2413,38 @@ impl GameState {
                 if spins_to_pass != 1 { "s" } else { "" },
                 target_name
             );
-            
+
             // If current player has no more spins, switch to target
             if self.contestants[self.current_player].total_spins() == 0 {
                 self.current_player = target;
             }
         }
     }
-    
+
     /// Find the player to pass spins to
-    /// 
+    ///
     /// Rules:
     /// - Pass to the leader
     /// - If you're leading, pass to 2nd place
     fn find_pass_target(&self) -> Option<usize> {
         let current = &self.contestants[self.current_player];
-        
+
         // Find scores of other non-eliminated players
-        let mut others: Vec<(usize, u32)> = self.contestants.iter()
+        let mut others: Vec<(usize, u32)> = self
+            .contestants
+            .iter()
             .enumerate()
             .filter(|(i, c)| *i != self.current_player && !c.eliminated)
             .map(|(i, c)| (i, c.score))
             .collect();
-        
+
         if others.is_empty() {
             return None;
         }
-        
+
         // Sort by score descending
         others.sort_by(|a, b| b.1.cmp(&a.1));
-        
+
         // If current player is leading or tied for lead, pass to 2nd place
         if current.score >= others[0].1 && others.len() > 1 {
             Some(others[1].0)
@@ -2402,17 +2452,17 @@ impl GameState {
             Some(others[0].0)
         }
     }
-    
+
     /// Check if turn should end and find next player
     fn check_turn_end(&mut self) {
         let player = &self.contestants[self.current_player];
-        
+
         // If current player has spins and isn't eliminated, continue their turn
         if !player.eliminated && player.total_spins() > 0 {
             self.update_board_message();
             return;
         }
-        
+
         // Find next player with spins
         for i in 1..=3 {
             let next_idx = (self.current_player + i) % 3;
@@ -2423,11 +2473,11 @@ impl GameState {
                 return;
             }
         }
-        
+
         // No one has spins - end round
         self.end_board_round();
     }
-    
+
     /// Update the message for current board state
     fn update_board_message(&mut self) {
         let player = &self.contestants[self.current_player];
@@ -2441,7 +2491,7 @@ impl GameState {
             player.passed_spins
         );
     }
-    
+
     /// End the current board round
     fn end_board_round(&mut self) {
         if self.round == 1 {
@@ -2450,7 +2500,7 @@ impl GameState {
             self.phase = GamePhase::Questions;
             self.question_state = QuestionState::default();
             self.message = "End of Round 1! Round 2 has BIGGER PRIZES!".to_string();
-            
+
             // Start round 2 questions
             self.start_next_question();
         } else {
@@ -2458,23 +2508,21 @@ impl GameState {
             self.end_game();
         }
     }
-    
+
     /// End the game and determine winner, returns audio events
     fn end_game(&mut self) -> Vec<AudioEvent> {
         self.phase = GamePhase::GameOver;
 
         // Find winner (highest score among non-eliminated)
-        let winner = self.contestants.iter()
+        let winner = self
+            .contestants
+            .iter()
             .enumerate()
             .filter(|(_, c)| !c.eliminated)
             .max_by_key(|(_, c)| c.score);
 
         if let Some((_idx, contestant)) = winner {
-            self.message = format!(
-                "{} WINS with ${}!",
-                contestant.name,
-                contestant.score
-            );
+            self.message = format!("{} WINS with ${}!", contestant.name, contestant.score);
             self.message_excited = true;
 
             self.result_state = ResultState {
@@ -2523,7 +2571,10 @@ impl GameState {
     pub fn validate_big_bucks_position(&self) -> bool {
         let square = &self.board[BIG_BUCKS_SOURCE];
         square.prizes.iter().any(|prize| {
-            matches!(&prize.prize_type, PrizeType::Special(SpecialAction::BigBucks))
+            matches!(
+                &prize.prize_type,
+                PrizeType::Special(SpecialAction::BigBucks)
+            )
         })
     }
 }

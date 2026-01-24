@@ -5,6 +5,24 @@ All notable changes to Press Your Luck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2025-01-24
+
+### Fixed
+
+#### CI/CD Workflow Fixes
+- Fixed incorrect GitHub Action reference (`dtolnay/rust-action` → `dtolnay/rust-toolchain`)
+- All CI jobs now pass: check, clippy, format, build
+
+#### Code Quality (Clippy Compliance)
+- Added `#[allow(clippy::upper_case_acronyms)]` for `TNT` and `UFO` variants
+- Renamed `Contestant::new()` → `Contestant::create()` (self_named_constructors)
+- Renamed `Prize::prize()` → `Prize::physical_prize()` (self_named_constructors)
+- Added `#[allow(clippy::too_many_arguments)]` to 8 rendering functions
+- Added `#[derive(Default)]` to `AudioEngine` struct
+- Fixed documentation comment formatting
+
+---
+
 ## [2.0.0] - 2025-01-24
 
 ### Changed
@@ -122,10 +140,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| 2.0.1 | 2025-01-24 | CI/CD fixes, clippy compliance |
 | 2.0.0 | 2025-01-24 | Framework migration to ggez 0.9, security fix |
 | 1.1.0 | 2025-01-24 | Authentic Whammy redesign, 66+ animations, holiday specials |
 | 1.0.0 | 2025-01-24 | Initial release with full game implementation |
 
+[2.0.1]: https://github.com/doublegate/PressYourLuck/releases/tag/v2.0.1
 [2.0.0]: https://github.com/doublegate/PressYourLuck/releases/tag/v2.0.0
 [1.1.0]: https://github.com/doublegate/PressYourLuck/releases/tag/v1.1.0
 [1.0.0]: https://github.com/doublegate/PressYourLuck/releases/tag/v1.0.0

@@ -108,10 +108,24 @@ const BOARD_ROWS: usize = 5;
 /// Board square positions (clockwise from top-left)
 /// Format: (column, row) for each of the 18 squares
 const SQUARE_POSITIONS: [(usize, usize); 18] = [
-    (0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0), // Top row (0-5)
-    (5, 1), (5, 2), (5, 3),                          // Right column (6-8)
-    (5, 4), (4, 4), (3, 4), (2, 4), (1, 4), (0, 4), // Bottom row (9-14)
-    (0, 3), (0, 2), (0, 1),                          // Left column (15-17)
+    (0, 0),
+    (1, 0),
+    (2, 0),
+    (3, 0),
+    (4, 0),
+    (5, 0), // Top row (0-5)
+    (5, 1),
+    (5, 2),
+    (5, 3), // Right column (6-8)
+    (5, 4),
+    (4, 4),
+    (3, 4),
+    (2, 4),
+    (1, 4),
+    (0, 4), // Bottom row (9-14)
+    (0, 3),
+    (0, 2),
+    (0, 1), // Left column (15-17)
 ];
 
 // ===============================================================================
@@ -239,7 +253,8 @@ impl GraphicsRenderer {
             for t in 1..=trail_len {
                 let trail_idx = if lit >= t { lit - t } else { 18 - (t - lit) };
                 let trail_intensity = 1.0 - (t as f32 / trail_len as f32) * 0.7;
-                self.square_flash[trail_idx] = self.square_flash[trail_idx].max(trail_intensity * 0.5);
+                self.square_flash[trail_idx] =
+                    self.square_flash[trail_idx].max(trail_intensity * 0.5);
             }
             self.prev_lit_square = lit;
         }
@@ -281,12 +296,9 @@ impl GraphicsRenderer {
                 1.0,
             );
 
-            if let Ok(line) = Mesh::new_line(
-                ctx,
-                &[[0.0, y as f32], [screen_w, y as f32]],
-                1.0,
-                color,
-            ) {
+            if let Ok(line) =
+                Mesh::new_line(ctx, &[[0.0, y as f32], [screen_w, y as f32]], 1.0, color)
+            {
                 canvas.draw(&line, DrawParam::default());
             }
         }
@@ -405,6 +417,7 @@ impl GraphicsRenderer {
     }
 
     /// Draw a single contestant podium
+    #[allow(clippy::too_many_arguments)]
     fn draw_single_podium(
         &self,
         canvas: &mut Canvas,
@@ -560,7 +573,10 @@ impl GraphicsRenderer {
         );
 
         // Earned/Passed detail
-        let detail_text = format!("({}E / {}P)", contestant.earned_spins, contestant.passed_spins);
+        let detail_text = format!(
+            "({}E / {}P)",
+            contestant.earned_spins, contestant.passed_spins
+        );
         let detail_size = width * 0.055;
         let detail = Text::new(TextFragment::new(&detail_text).scale(detail_size));
         canvas.draw(
@@ -586,9 +602,14 @@ impl GraphicsRenderer {
                 Color::new(0.25, 0.05, 0.05, 0.9)
             };
 
-            if let Ok(circle) =
-                Mesh::new_circle(ctx, DrawMode::fill(), [wx, whammy_y], whammy_radius, 0.5, color)
-            {
+            if let Ok(circle) = Mesh::new_circle(
+                ctx,
+                DrawMode::fill(),
+                [wx, whammy_y],
+                whammy_radius,
+                0.5,
+                color,
+            ) {
                 canvas.draw(&circle, DrawParam::default());
             }
 
@@ -609,6 +630,7 @@ impl GraphicsRenderer {
     }
 
     /// Draw LED-style score display
+    #[allow(clippy::too_many_arguments)]
     fn draw_led_score(
         &self,
         canvas: &mut Canvas,
@@ -776,6 +798,7 @@ impl GraphicsRenderer {
     }
 
     /// Draw a single action button
+    #[allow(clippy::too_many_arguments)]
     fn draw_action_button(
         &self,
         canvas: &mut Canvas,
@@ -800,9 +823,12 @@ impl GraphicsRenderer {
             Color::new(0.15, 0.15, 0.2, 0.8)
         };
 
-        if let Ok(button) =
-            Mesh::new_rectangle(ctx, DrawMode::fill(), Rect::new(x, y, width, height), bg_color)
-        {
+        if let Ok(button) = Mesh::new_rectangle(
+            ctx,
+            DrawMode::fill(),
+            Rect::new(x, y, width, height),
+            bg_color,
+        ) {
             canvas.draw(&button, DrawParam::default());
         }
 
@@ -929,6 +955,7 @@ impl GraphicsRenderer {
     }
 
     /// Draw chase lights around the board perimeter
+    #[allow(clippy::too_many_arguments)]
     fn draw_chase_lights(
         &self,
         canvas: &mut Canvas,
@@ -992,9 +1019,14 @@ impl GraphicsRenderer {
                 CHASE_LIGHT_OFF
             };
 
-            if let Ok(bulb) =
-                Mesh::new_circle(ctx, DrawMode::fill(), [lx, ly], bulb_radius, 0.5, bulb_color)
-            {
+            if let Ok(bulb) = Mesh::new_circle(
+                ctx,
+                DrawMode::fill(),
+                [lx, ly],
+                bulb_radius,
+                0.5,
+                bulb_color,
+            ) {
                 canvas.draw(&bulb, DrawParam::default());
             }
         }
@@ -1031,6 +1063,7 @@ impl GraphicsRenderer {
     }
 
     /// Draw a single board square
+    #[allow(clippy::too_many_arguments)]
     fn draw_board_square(
         &self,
         canvas: &mut Canvas,
@@ -1068,9 +1101,12 @@ impl GraphicsRenderer {
         );
 
         // Draw square background
-        if let Ok(bg) =
-            Mesh::new_rectangle(ctx, DrawMode::fill(), Rect::new(x, y, width, height), primary_boosted)
-        {
+        if let Ok(bg) = Mesh::new_rectangle(
+            ctx,
+            DrawMode::fill(),
+            Rect::new(x, y, width, height),
+            primary_boosted,
+        ) {
             canvas.draw(&bg, DrawParam::default());
         }
 
@@ -1142,8 +1178,20 @@ impl GraphicsRenderer {
 
         // Mini Whammy icons
         if matches!(prize.prize_type, PrizeType::Whammy) {
-            self.draw_mini_whammy(canvas, ctx, x + width * 0.1, y + height * 0.15, width * 0.25);
-            self.draw_mini_whammy(canvas, ctx, x + width * 0.65, y + height * 0.15, width * 0.25);
+            self.draw_mini_whammy(
+                canvas,
+                ctx,
+                x + width * 0.1,
+                y + height * 0.15,
+                width * 0.25,
+            );
+            self.draw_mini_whammy(
+                canvas,
+                ctx,
+                x + width * 0.65,
+                y + height * 0.15,
+                width * 0.25,
+            );
         }
     }
 
@@ -1166,9 +1214,14 @@ impl GraphicsRenderer {
         let eye_y = y + size * 0.35;
 
         // Left eye white
-        if let Ok(eye) =
-            Mesh::new_circle(ctx, DrawMode::fill(), [x + size * 0.3, eye_y], eye_size, 0.5, WHITE)
-        {
+        if let Ok(eye) = Mesh::new_circle(
+            ctx,
+            DrawMode::fill(),
+            [x + size * 0.3, eye_y],
+            eye_size,
+            0.5,
+            WHITE,
+        ) {
             canvas.draw(&eye, DrawParam::default());
         }
         // Left pupil
@@ -1184,9 +1237,14 @@ impl GraphicsRenderer {
         }
 
         // Right eye white
-        if let Ok(eye) =
-            Mesh::new_circle(ctx, DrawMode::fill(), [x + size * 0.7, eye_y], eye_size, 0.5, WHITE)
-        {
+        if let Ok(eye) = Mesh::new_circle(
+            ctx,
+            DrawMode::fill(),
+            [x + size * 0.7, eye_y],
+            eye_size,
+            0.5,
+            WHITE,
+        ) {
             canvas.draw(&eye, DrawParam::default());
         }
         // Right pupil
@@ -1262,13 +1320,17 @@ impl GraphicsRenderer {
             canvas.draw(
                 &display_text,
                 DrawParam::default()
-                    .dest([center_x + center_w * 0.2, center_y + center_h / 2.0 - text_size / 2.0])
+                    .dest([
+                        center_x + center_w * 0.2,
+                        center_y + center_h / 2.0 - text_size / 2.0,
+                    ])
                     .color(Color::new(0.5, 0.3, 0.6, pulse)),
             );
         }
     }
 
     /// Draw Whammy character animation
+    #[allow(clippy::too_many_arguments)]
     fn draw_whammy_animation(
         &self,
         canvas: &mut Canvas,
@@ -1296,7 +1358,14 @@ impl GraphicsRenderer {
         );
 
         // Draw the Whammy character
-        self.draw_whammy_character(canvas, ctx, wx, wy, whammy_size * scale, animation.animation_type);
+        self.draw_whammy_character(
+            canvas,
+            ctx,
+            wx,
+            wy,
+            whammy_size * scale,
+            animation.animation_type,
+        );
 
         // Draw catchphrase
         if !animation.catchphrase.is_empty() {
@@ -1328,6 +1397,7 @@ impl GraphicsRenderer {
     }
 
     /// Calculate Whammy position based on animation type
+    #[allow(clippy::too_many_arguments)]
     fn calculate_whammy_position(
         &self,
         animation_type: WhammyAnimationType,
@@ -1341,7 +1411,12 @@ impl GraphicsRenderer {
         match animation_type {
             WhammyAnimationType::Pogo => {
                 let bounce = (progress * 10.0 * std::f32::consts::PI).sin().abs();
-                (center_x, center_y - bounce * height * 0.3, 0.0, 1.0 + bounce * 0.2)
+                (
+                    center_x,
+                    center_y - bounce * height * 0.3,
+                    0.0,
+                    1.0 + bounce * 0.2,
+                )
             }
             WhammyAnimationType::Dance => {
                 let sway = (progress * 8.0 * std::f32::consts::PI).sin();
@@ -1460,9 +1535,14 @@ impl GraphicsRenderer {
         }
 
         // Cape collar
-        if let Ok(collar) =
-            Mesh::new_circle(ctx, DrawMode::fill(), [x, cape_attach_y], size * 0.12, 0.5, cape_yellow)
-        {
+        if let Ok(collar) = Mesh::new_circle(
+            ctx,
+            DrawMode::fill(),
+            [x, cape_attach_y],
+            size * 0.12,
+            0.5,
+            cape_yellow,
+        ) {
             canvas.draw(&collar, DrawParam::default());
         }
     }
@@ -1487,9 +1567,15 @@ impl GraphicsRenderer {
         }
 
         // Main body
-        if let Ok(body) =
-            Mesh::new_ellipse(ctx, DrawMode::fill(), [x, y], body_width, body_height, 0.5, WHAMMY_RED)
-        {
+        if let Ok(body) = Mesh::new_ellipse(
+            ctx,
+            DrawMode::fill(),
+            [x, y],
+            body_width,
+            body_height,
+            0.5,
+            WHAMMY_RED,
+        ) {
             canvas.draw(&body, DrawParam::default());
         }
 
@@ -1537,16 +1623,24 @@ impl GraphicsRenderer {
 
         if let Ok(arm) = Mesh::new_line(
             ctx,
-            &[[left_shoulder.0, left_shoulder.1], [left_hand_x, left_hand_y]],
+            &[
+                [left_shoulder.0, left_shoulder.1],
+                [left_hand_x, left_hand_y],
+            ],
             arm_thickness,
             WHAMMY_RED,
         ) {
             canvas.draw(&arm, DrawParam::default());
         }
 
-        if let Ok(hand) =
-            Mesh::new_circle(ctx, DrawMode::fill(), [left_hand_x, left_hand_y], hand_size, 0.5, WHAMMY_RED)
-        {
+        if let Ok(hand) = Mesh::new_circle(
+            ctx,
+            DrawMode::fill(),
+            [left_hand_x, left_hand_y],
+            hand_size,
+            0.5,
+            WHAMMY_RED,
+        ) {
             canvas.draw(&hand, DrawParam::default());
         }
 
@@ -1557,7 +1651,10 @@ impl GraphicsRenderer {
 
         if let Ok(arm) = Mesh::new_line(
             ctx,
-            &[[right_shoulder.0, right_shoulder.1], [right_hand_x, right_hand_y]],
+            &[
+                [right_shoulder.0, right_shoulder.1],
+                [right_hand_x, right_hand_y],
+            ],
             arm_thickness,
             WHAMMY_RED,
         ) {
@@ -1624,8 +1721,14 @@ impl GraphicsRenderer {
             DrawMode::fill(),
             &[
                 Vec2::new(left_hip_x + left_offset - foot_width * 0.3, left_foot_y),
-                Vec2::new(left_hip_x + left_offset - foot_width, left_foot_y + foot_height),
-                Vec2::new(left_hip_x + left_offset + foot_width * 0.5, left_foot_y + foot_height),
+                Vec2::new(
+                    left_hip_x + left_offset - foot_width,
+                    left_foot_y + foot_height,
+                ),
+                Vec2::new(
+                    left_hip_x + left_offset + foot_width * 0.5,
+                    left_foot_y + foot_height,
+                ),
             ],
             WHAMMY_RED,
         ) {
@@ -1654,8 +1757,14 @@ impl GraphicsRenderer {
             DrawMode::fill(),
             &[
                 Vec2::new(right_hip_x + right_offset + foot_width * 0.3, right_foot_y),
-                Vec2::new(right_hip_x + right_offset + foot_width, right_foot_y + foot_height),
-                Vec2::new(right_hip_x + right_offset - foot_width * 0.5, right_foot_y + foot_height),
+                Vec2::new(
+                    right_hip_x + right_offset + foot_width,
+                    right_foot_y + foot_height,
+                ),
+                Vec2::new(
+                    right_hip_x + right_offset - foot_width * 0.5,
+                    right_foot_y + foot_height,
+                ),
             ],
             WHAMMY_RED,
         ) {
@@ -1664,7 +1773,14 @@ impl GraphicsRenderer {
     }
 
     /// Draw the Whammy's dollar sign chest emblem
-    fn draw_whammy_emblem(&self, canvas: &mut Canvas, ctx: &mut Context, x: f32, y: f32, size: f32) {
+    fn draw_whammy_emblem(
+        &self,
+        canvas: &mut Canvas,
+        ctx: &mut Context,
+        x: f32,
+        y: f32,
+        size: f32,
+    ) {
         let emblem_y = y + size * 0.05;
         let emblem_width = size * 0.18;
         let emblem_height = size * 0.2;
@@ -1754,9 +1870,14 @@ impl GraphicsRenderer {
         }
 
         // Main head
-        if let Ok(head) =
-            Mesh::new_circle(ctx, DrawMode::fill(), [x, head_y], head_radius, 0.5, WHAMMY_RED)
-        {
+        if let Ok(head) = Mesh::new_circle(
+            ctx,
+            DrawMode::fill(),
+            [x, head_y],
+            head_radius,
+            0.5,
+            WHAMMY_RED,
+        ) {
             canvas.draw(&head, DrawParam::default());
         }
 
@@ -1913,6 +2034,7 @@ impl GraphicsRenderer {
     }
 
     /// Draw result display in center
+    #[allow(clippy::too_many_arguments)]
     fn draw_result_display(
         &self,
         canvas: &mut Canvas,
