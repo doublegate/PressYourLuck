@@ -1478,6 +1478,92 @@ impl GraphicsRenderer {
                 let boom = if progress > 0.7 { 1.0 + (progress - 0.7) / 0.3 * 0.5 } else { 1.0 };
                 (x_pos, center_y, 0.0, boom)
             }
+
+            // ═══════════════════════════════════════════════════════════════════════
+            // SPECIAL OCCASION WHAMMIES (Holiday specials)
+            // ═══════════════════════════════════════════════════════════════════════
+
+            WhammyAnimationType::ThanksgivingTurkey => {
+                // Turkey hunting - musket backfire
+                let aim = (progress * 2.0).min(1.0);
+                let backfire = if progress > 0.6 { (progress - 0.6) / 0.4 } else { 0.0 };
+                (center_x - backfire * width * 0.3, center_y, aim * 0.1, 1.0 - backfire * 0.2)
+            }
+            WhammyAnimationType::ScroogeWhammy => {
+                // Scrooge with cane - hunched walk
+                let x_pos = x + width * 0.2 + progress * width * 0.6;
+                let hunch = (progress * 6.0 * std::f32::consts::PI).sin() * 0.05;
+                (x_pos, center_y + hunch * height, 0.1, 0.9)
+            }
+            WhammyAnimationType::ChristmasTree => {
+                // Decorating tree then it falls
+                let sway = (progress * 4.0 * std::f32::consts::PI).sin() * 0.1;
+                let fall = if progress > 0.7 { (progress - 0.7) / 0.3 * 0.8 } else { 0.0 };
+                (center_x + fall * width * 0.3, center_y, sway + fall, 1.0)
+            }
+            WhammyAnimationType::ValentineCupid => {
+                // Cupid flying and shooting arrow
+                let fly_y = center_y + (progress * 4.0 * std::f32::consts::PI).sin() * height * 0.15;
+                let ouch = if progress > 0.7 { (progress - 0.7) / 0.3 * 0.3 } else { 0.0 };
+                (center_x, fly_y, ouch, 1.0)
+            }
+            WhammyAnimationType::EasterBunny => {
+                // Bunny hopping with eggs falling
+                let hop = (progress * 8.0 * std::f32::consts::PI).sin().abs() * 0.2;
+                (center_x, center_y - hop * height, 0.0, 1.0)
+            }
+            WhammyAnimationType::Leprechaun => {
+                // Leprechaun jig dancing
+                let jig = (progress * 12.0 * std::f32::consts::PI).sin() * 0.15;
+                let hop = (progress * 12.0 * std::f32::consts::PI).sin().abs() * 0.1;
+                (center_x + jig * width, center_y - hop * height, 0.0, 1.0)
+            }
+            WhammyAnimationType::FourthOfJuly => {
+                // Patriotic with sparkler mishap
+                let wave = (progress * 8.0 * std::f32::consts::PI).sin() * 0.2;
+                let boom = if progress > 0.7 { 1.0 + (progress - 0.7) / 0.3 * 0.5 } else { 1.0 };
+                (center_x, center_y, wave, boom)
+            }
+            WhammyAnimationType::HalloweenVampire => {
+                // Vampire cape flourish
+                let cape = (progress * 4.0 * std::f32::consts::PI).sin() * 0.2;
+                let scale = 1.0 + (progress * 2.0 * std::f32::consts::PI).sin().abs() * 0.1;
+                (center_x, center_y, cape, scale)
+            }
+            WhammyAnimationType::OlympicsWhammy => {
+                // Running then tripping over hurdle
+                let x_pos = x + width * 0.1 + progress * width * 0.7;
+                let trip = if progress > 0.6 { (progress - 0.6) / 0.4 * 1.0 } else { 0.0 };
+                (x_pos, center_y + trip * height * 0.2, trip * 0.5, 1.0)
+            }
+            WhammyAnimationType::NewYearBaby => {
+                // Baby New Year bouncing
+                let bounce = (progress * 10.0 * std::f32::consts::PI).sin().abs() * 0.15;
+                (center_x, center_y - bounce * height, 0.0, 0.8)
+            }
+
+            // ═══════════════════════════════════════════════════════════════════════
+            // WHAMMY-OUT ANIMATIONS (4th Whammy elimination specials)
+            // ═══════════════════════════════════════════════════════════════════════
+
+            WhammyAnimationType::GrimReaper => {
+                // Grim Reaper slowly approaching then escorting out
+                let x_pos = x + width * 0.8 - progress * width * 0.6;
+                let hover = (progress * 3.0 * std::f32::consts::PI).sin() * 0.05;
+                (x_pos, center_y + hover * height, 0.0, 1.2)
+            }
+            WhammyAnimationType::FiringSquad => {
+                // Firing squad - "Ready! Aim! FIRE!"
+                let aim = (progress * 3.0).min(1.0);
+                let recoil = if progress > 0.8 { (progress - 0.8) / 0.2 * 0.3 } else { 0.0 };
+                (center_x, center_y, aim * 0.1 - recoil, 1.0 + recoil * 0.2)
+            }
+            WhammyAnimationType::AngelWhammy => {
+                // Angel floating up to heaven with money
+                let rise = progress * height * 0.5;
+                let wings = (progress * 8.0 * std::f32::consts::PI).sin() * 0.1;
+                (center_x, center_y - rise, wings, 1.0 - progress * 0.3)
+            }
         };
 
         // Draw the Whammy character
@@ -1522,205 +1608,600 @@ impl GraphicsRenderer {
         }
     }
 
-    /// Draw the Whammy character (authentic 1983-1986 proportions)
-    /// The original Whammy had a larger head-to-body ratio, more expressive eyes,
-    /// and distinctive pointed ears/horns curving outward
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // AUTHENTIC WHAMMY CHARACTER (1983-1986 CBS Press Your Luck)
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // Research sources:
+    // - Character designed by Savage Steve Holland, sketched on a napkin
+    // - Red cartoon creature (NOT a devil - that was predecessor show "Second Chance")
+    // - Yellow superhero-style eye mask
+    // - Yellow flowing cape
+    // - Dollar sign ($) on yellow chest shield/emblem
+    // - Small tuft of hair on top of head
+    // - Pointy feet
+    // - Mischievous grin and big expressive eyes
+    // - Animated by Holland on early computer graphics system
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    /// Draw the authentic Whammy character from the 1983-1986 CBS Press Your Luck
+    ///
+    /// The Whammy was a mischievous red cartoon creature with:
+    /// - Yellow superhero-style eye mask
+    /// - Yellow flowing cape
+    /// - Dollar sign ($) insignia on yellow chest shield
+    /// - Small tuft of hair (NOT devil horns)
+    /// - Pointy feet
+    /// - Big expressive eyes and wide mischievous grin
     fn draw_whammy_character(&self, x: f32, y: f32, size: f32, rotation: f32, animation_type: WhammyAnimationType) {
-        // Apply rotation transform manually
+        // Apply rotation transform
         let cos_r = rotation.cos();
         let sin_r = rotation.sin();
 
         // Breathing/bounce animation for liveliness
         let breath = 1.0 + (self.time * 4.0).sin() * 0.02;
-        let body_size = size * 0.52 * breath;
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // CAPE (Drawn first, behind body) - Yellow flowing superhero cape
+        // ═══════════════════════════════════════════════════════════════════════════
+        self.draw_whammy_cape(x, y, size, rotation, animation_type);
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // BODY - Red rounded imp/creature body
+        // ═══════════════════════════════════════════════════════════════════════════
+        self.draw_whammy_body(x, y, size, breath, animation_type);
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // ARMS - Thin cartoon arms with hands
+        // ═══════════════════════════════════════════════════════════════════════════
+        self.draw_whammy_arms(x, y, size, animation_type);
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // LEGS - Thin legs with pointy feet (authentic to the show)
+        // ═══════════════════════════════════════════════════════════════════════════
+        self.draw_whammy_legs(x, y, size, animation_type);
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // DOLLAR SIGN CHEST EMBLEM - Yellow shield with $ symbol
+        // ═══════════════════════════════════════════════════════════════════════════
+        self.draw_whammy_emblem(x, y, size);
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // HEAD/FACE - Eyes visible through yellow mask, hair tuft, mischievous grin
+        // ═══════════════════════════════════════════════════════════════════════════
+        self.draw_whammy_face(x, y, size, cos_r, sin_r, animation_type);
+    }
+
+    /// Draw the Whammy's yellow flowing cape (behind body)
+    fn draw_whammy_cape(&self, x: f32, y: f32, size: f32, _rotation: f32, animation_type: WhammyAnimationType) {
+        // Cape color - bright yellow like the 1983 show
+        let cape_yellow = Color::new(1.0, 0.85, 0.0, 1.0);
+        let cape_dark = Color::new(0.85, 0.7, 0.0, 1.0);
+
+        // Cape wave animation
+        let wave = match animation_type {
+            WhammyAnimationType::Dance | WhammyAnimationType::Hula =>
+                (self.time * 6.0).sin() * size * 0.08,
+            WhammyAnimationType::Pogo | WhammyAnimationType::Jumping =>
+                (self.time * 10.0).sin() * size * 0.1,
+            WhammyAnimationType::FlyingCarpet | WhammyAnimationType::LawnMower =>
+                (self.time * 8.0).sin() * size * 0.12,
+            _ => (self.time * 3.0).sin() * size * 0.04,
+        };
+
+        // Cape attaches at neck/shoulder area and flows down and back
+        let cape_attach_y = y - size * 0.15;
+        let cape_width = size * 0.5;
+        let cape_length = size * 0.6;
+
+        // Draw flowing cape with multiple segments for wave effect
+        // Left cape side
+        draw_triangle(
+            Vec2::new(x - size * 0.2, cape_attach_y),
+            Vec2::new(x - cape_width + wave * 0.5, cape_attach_y + cape_length),
+            Vec2::new(x - size * 0.05, cape_attach_y + cape_length * 0.5),
+            cape_dark,
+        );
+        draw_triangle(
+            Vec2::new(x - size * 0.2, cape_attach_y),
+            Vec2::new(x - cape_width * 0.7 + wave, cape_attach_y + cape_length * 0.8),
+            Vec2::new(x - cape_width + wave * 0.5, cape_attach_y + cape_length),
+            cape_yellow,
+        );
+
+        // Right cape side
+        draw_triangle(
+            Vec2::new(x + size * 0.2, cape_attach_y),
+            Vec2::new(x + cape_width - wave * 0.5, cape_attach_y + cape_length),
+            Vec2::new(x + size * 0.05, cape_attach_y + cape_length * 0.5),
+            cape_dark,
+        );
+        draw_triangle(
+            Vec2::new(x + size * 0.2, cape_attach_y),
+            Vec2::new(x + cape_width * 0.7 - wave, cape_attach_y + cape_length * 0.8),
+            Vec2::new(x + cape_width - wave * 0.5, cape_attach_y + cape_length),
+            cape_yellow,
+        );
+
+        // Cape collar - connects to body
+        draw_circle(x, cape_attach_y, size * 0.12, cape_yellow);
+    }
+
+    /// Draw the Whammy's red body
+    fn draw_whammy_body(&self, x: f32, y: f32, size: f32, breath: f32, _animation_type: WhammyAnimationType) {
+        let body_width = size * 0.35 * breath;
+        let body_height = size * 0.4 * breath;
 
         // Body shadow for depth
-        draw_circle(x + size * 0.02, y + size * 0.02, body_size, Color::new(0.2, 0.0, 0.0, 0.5));
+        draw_ellipse(
+            x + size * 0.02,
+            y + size * 0.02,
+            body_width,
+            body_height,
+            0.0,
+            Color::new(0.3, 0.0, 0.0, 0.5)
+        );
 
-        // Main body (red fuzzy circle - larger head-to-body ratio like the show)
-        draw_circle(x, y, body_size, WHAMMY_RED);
+        // Main body - red oval torso
+        draw_ellipse(x, y, body_width, body_height, 0.0, WHAMMY_RED);
 
-        // Body highlight for 3D effect
-        draw_circle(x - size * 0.1, y - size * 0.08, body_size * 0.6, Color::new(0.95, 0.25, 0.2, 0.4));
+        // Body highlight for 3D cartoon effect
+        draw_ellipse(
+            x - size * 0.08,
+            y - size * 0.1,
+            body_width * 0.5,
+            body_height * 0.4,
+            0.0,
+            Color::new(1.0, 0.35, 0.3, 0.4)
+        );
 
-        // Belly area (darker center)
-        draw_circle(x, y + size * 0.05, size * 0.3, Color::new(0.65, 0.0, 0.0, 1.0));
+        // Darker belly area (subtle shading)
+        draw_ellipse(
+            x,
+            y + size * 0.08,
+            body_width * 0.7,
+            body_height * 0.5,
+            0.0,
+            Color::new(0.7, 0.05, 0.05, 0.3)
+        );
+    }
 
-        // ─── EYES (Larger, more expressive like the TV show) ───
+    /// Draw the Whammy's thin cartoon arms with hands
+    fn draw_whammy_arms(&self, x: f32, y: f32, size: f32, animation_type: WhammyAnimationType) {
+        // Arm animation based on what the Whammy is doing
+        let (left_arm_angle, right_arm_angle, left_wave, right_wave) = match animation_type {
+            WhammyAnimationType::Dance => {
+                let wave = (self.time * 6.0).sin();
+                (0.3 + wave * 0.4, -0.3 - wave * 0.4, wave * 0.1, -wave * 0.1)
+            }
+            WhammyAnimationType::Pogo | WhammyAnimationType::Jumping => {
+                let bounce = (self.time * 10.0).sin();
+                (-0.5 - bounce.abs() * 0.3, 0.5 + bounce.abs() * 0.3, 0.0, 0.0)
+            }
+            WhammyAnimationType::Hammer => {
+                let swing = (self.time * 8.0).sin();
+                (swing * 0.8, swing * 0.8, 0.0, 0.0)
+            }
+            WhammyAnimationType::Hula => {
+                let sway = (self.time * 5.0).sin();
+                (0.4 + sway * 0.2, -0.4 - sway * 0.2, sway * 0.05, -sway * 0.05)
+            }
+            _ => {
+                // Default subtle arm movement
+                let subtle = (self.time * 2.0).sin() * 0.1;
+                (0.3 + subtle, -0.3 - subtle, 0.0, 0.0)
+            }
+        };
+
+        let arm_length = size * 0.35;
+        let arm_thickness = size * 0.06;
+        let hand_size = size * 0.08;
+
+        // Left arm
+        let left_shoulder = (x - size * 0.28, y - size * 0.05);
+        let left_elbow_x = left_shoulder.0 - arm_length * 0.5 * (1.0 + left_arm_angle).cos() + left_wave * size;
+        let left_elbow_y = left_shoulder.1 + arm_length * 0.5 * (1.0 + left_arm_angle).sin();
+        let left_hand_x = left_elbow_x - arm_length * 0.5 * left_arm_angle.cos() + left_wave * size;
+        let left_hand_y = left_elbow_y + arm_length * 0.5 * left_arm_angle.sin().abs();
+
+        // Left upper arm
+        draw_line(left_shoulder.0, left_shoulder.1, left_elbow_x, left_elbow_y, arm_thickness, WHAMMY_RED);
+        // Left forearm
+        draw_line(left_elbow_x, left_elbow_y, left_hand_x, left_hand_y, arm_thickness * 0.8, WHAMMY_RED);
+        // Left hand (circle)
+        draw_circle(left_hand_x, left_hand_y, hand_size, WHAMMY_RED);
+        // Hand highlight
+        draw_circle(left_hand_x - hand_size * 0.3, left_hand_y - hand_size * 0.3, hand_size * 0.3, Color::new(1.0, 0.4, 0.35, 0.5));
+
+        // Right arm
+        let right_shoulder = (x + size * 0.28, y - size * 0.05);
+        let right_elbow_x = right_shoulder.0 + arm_length * 0.5 * (1.0 - right_arm_angle).cos() + right_wave * size;
+        let right_elbow_y = right_shoulder.1 + arm_length * 0.5 * (1.0 - right_arm_angle).sin();
+        let right_hand_x = right_elbow_x + arm_length * 0.5 * (-right_arm_angle).cos() + right_wave * size;
+        let right_hand_y = right_elbow_y + arm_length * 0.5 * (-right_arm_angle).sin().abs();
+
+        // Right upper arm
+        draw_line(right_shoulder.0, right_shoulder.1, right_elbow_x, right_elbow_y, arm_thickness, WHAMMY_RED);
+        // Right forearm
+        draw_line(right_elbow_x, right_elbow_y, right_hand_x, right_hand_y, arm_thickness * 0.8, WHAMMY_RED);
+        // Right hand (circle)
+        draw_circle(right_hand_x, right_hand_y, hand_size, WHAMMY_RED);
+        // Hand highlight
+        draw_circle(right_hand_x - hand_size * 0.3, right_hand_y - hand_size * 0.3, hand_size * 0.3, Color::new(1.0, 0.4, 0.35, 0.5));
+    }
+
+    /// Draw the Whammy's thin legs with pointy feet
+    fn draw_whammy_legs(&self, x: f32, y: f32, size: f32, animation_type: WhammyAnimationType) {
+        // Leg animation
+        let (left_leg_offset, right_leg_offset, leg_spread) = match animation_type {
+            WhammyAnimationType::Dance => {
+                let dance = (self.time * 5.0).sin();
+                (dance * size * 0.08, -dance * size * 0.08, 0.15)
+            }
+            WhammyAnimationType::Pogo | WhammyAnimationType::Jumping => {
+                let jump = (self.time * 12.0).sin();
+                (0.0, 0.0, 0.1 + jump.abs() * 0.1)
+            }
+            WhammyAnimationType::Hula => {
+                let sway = (self.time * 4.0).sin();
+                (sway * size * 0.05, -sway * size * 0.05, 0.18)
+            }
+            WhammyAnimationType::LawnMower | WhammyAnimationType::RollerSkating => {
+                let run = (self.time * 10.0).sin();
+                (run * size * 0.12, -run * size * 0.12, 0.12)
+            }
+            _ => (0.0, 0.0, 0.15),
+        };
+
+        let leg_top_y = y + size * 0.25;
+        let leg_length = size * 0.4;
+        let leg_thickness = size * 0.055;
+        let foot_width = size * 0.12;
+        let foot_height = size * 0.06;
+
+        // Left leg
+        let left_hip_x = x - size * leg_spread;
+        let left_knee_y = leg_top_y + leg_length * 0.5;
+        let left_foot_y = leg_top_y + leg_length;
+
+        // Left thigh
+        draw_line(
+            left_hip_x, leg_top_y,
+            left_hip_x + left_leg_offset * 0.5, left_knee_y,
+            leg_thickness, WHAMMY_RED
+        );
+        // Left shin
+        draw_line(
+            left_hip_x + left_leg_offset * 0.5, left_knee_y,
+            left_hip_x + left_leg_offset, left_foot_y,
+            leg_thickness * 0.9, WHAMMY_RED
+        );
+        // Left pointy foot (triangle pointing outward)
+        draw_triangle(
+            Vec2::new(left_hip_x + left_leg_offset - foot_width * 0.3, left_foot_y),
+            Vec2::new(left_hip_x + left_leg_offset - foot_width, left_foot_y + foot_height),
+            Vec2::new(left_hip_x + left_leg_offset + foot_width * 0.5, left_foot_y + foot_height),
+            WHAMMY_RED,
+        );
+
+        // Right leg
+        let right_hip_x = x + size * leg_spread;
+        let right_knee_y = leg_top_y + leg_length * 0.5;
+        let right_foot_y = leg_top_y + leg_length;
+
+        // Right thigh
+        draw_line(
+            right_hip_x, leg_top_y,
+            right_hip_x + right_leg_offset * 0.5, right_knee_y,
+            leg_thickness, WHAMMY_RED
+        );
+        // Right shin
+        draw_line(
+            right_hip_x + right_leg_offset * 0.5, right_knee_y,
+            right_hip_x + right_leg_offset, right_foot_y,
+            leg_thickness * 0.9, WHAMMY_RED
+        );
+        // Right pointy foot (triangle pointing outward)
+        draw_triangle(
+            Vec2::new(right_hip_x + right_leg_offset + foot_width * 0.3, right_foot_y),
+            Vec2::new(right_hip_x + right_leg_offset + foot_width, right_foot_y + foot_height),
+            Vec2::new(right_hip_x + right_leg_offset - foot_width * 0.5, right_foot_y + foot_height),
+            WHAMMY_RED,
+        );
+    }
+
+    /// Draw the Whammy's dollar sign chest emblem (yellow shield with $)
+    fn draw_whammy_emblem(&self, x: f32, y: f32, size: f32) {
+        let emblem_y = y + size * 0.05;
+        let emblem_width = size * 0.18;
+        let emblem_height = size * 0.2;
+
+        // Yellow shield background
+        let shield_yellow = Color::new(1.0, 0.85, 0.0, 1.0);
+        let shield_dark = Color::new(0.9, 0.75, 0.0, 1.0);
+
+        // Shield shape (pentagon-ish)
+        draw_triangle(
+            Vec2::new(x - emblem_width, emblem_y - emblem_height * 0.4),
+            Vec2::new(x + emblem_width, emblem_y - emblem_height * 0.4),
+            Vec2::new(x, emblem_y + emblem_height),
+            shield_yellow,
+        );
+        draw_rectangle(
+            x - emblem_width, emblem_y - emblem_height * 0.5,
+            emblem_width * 2.0, emblem_height * 0.5,
+            shield_yellow,
+        );
+
+        // Shield border
+        draw_line(
+            x - emblem_width, emblem_y - emblem_height * 0.5,
+            x + emblem_width, emblem_y - emblem_height * 0.5,
+            2.0, shield_dark
+        );
+        draw_line(
+            x - emblem_width, emblem_y - emblem_height * 0.5,
+            x - emblem_width, emblem_y - emblem_height * 0.4,
+            2.0, shield_dark
+        );
+        draw_line(
+            x + emblem_width, emblem_y - emblem_height * 0.5,
+            x + emblem_width, emblem_y - emblem_height * 0.4,
+            2.0, shield_dark
+        );
+        draw_line(x - emblem_width, emblem_y - emblem_height * 0.4, x, emblem_y + emblem_height, 2.0, shield_dark);
+        draw_line(x + emblem_width, emblem_y - emblem_height * 0.4, x, emblem_y + emblem_height, 2.0, shield_dark);
+
+        // Dollar sign ($) on the shield - authentic to the 1983 show
+        let dollar_size = emblem_height * 0.5;
+        let dollar_y = emblem_y - emblem_height * 0.15;
+
+        // Draw $ using lines (S-curve with vertical line)
+        // Vertical line through the S
+        draw_line(x, dollar_y - dollar_size * 0.7, x, dollar_y + dollar_size * 0.7, 2.5, BLACK);
+
+        // S curve (simplified as two arcs)
+        // Top curve of S
+        for i in 0..15 {
+            let t = i as f32 / 14.0;
+            let angle = std::f32::consts::PI * (0.5 + t * 0.8);
+            let cx = x + angle.cos() * dollar_size * 0.35;
+            let cy = dollar_y - dollar_size * 0.3 + angle.sin() * dollar_size * 0.25;
+            if i > 0 {
+                let prev_t = (i - 1) as f32 / 14.0;
+                let prev_angle = std::f32::consts::PI * (0.5 + prev_t * 0.8);
+                let prev_cx = x + prev_angle.cos() * dollar_size * 0.35;
+                let prev_cy = dollar_y - dollar_size * 0.3 + prev_angle.sin() * dollar_size * 0.25;
+                draw_line(prev_cx, prev_cy, cx, cy, 2.5, BLACK);
+            }
+        }
+        // Bottom curve of S (reversed direction)
+        for i in 0..15 {
+            let t = i as f32 / 14.0;
+            let angle = std::f32::consts::PI * (1.5 + t * 0.8);
+            let cx = x + angle.cos() * dollar_size * 0.35;
+            let cy = dollar_y + dollar_size * 0.2 + angle.sin() * dollar_size * 0.25;
+            if i > 0 {
+                let prev_t = (i - 1) as f32 / 14.0;
+                let prev_angle = std::f32::consts::PI * (1.5 + prev_t * 0.8);
+                let prev_cx = x + prev_angle.cos() * dollar_size * 0.35;
+                let prev_cy = dollar_y + dollar_size * 0.2 + prev_angle.sin() * dollar_size * 0.25;
+                draw_line(prev_cx, prev_cy, cx, cy, 2.5, BLACK);
+            }
+        }
+    }
+
+    /// Draw the Whammy's face with yellow mask, eyes, hair tuft, and mischievous grin
+    fn draw_whammy_face(&self, x: f32, y: f32, size: f32, cos_r: f32, sin_r: f32, animation_type: WhammyAnimationType) {
+        // Head is slightly above and overlapping the body
+        let head_y = y - size * 0.25;
+        let head_radius = size * 0.32;
+
+        // Head shadow
+        draw_circle(x + size * 0.015, head_y + size * 0.015, head_radius, Color::new(0.3, 0.0, 0.0, 0.4));
+
+        // Main head (red circle)
+        draw_circle(x, head_y, head_radius, WHAMMY_RED);
+
+        // Head highlight
+        draw_circle(x - head_radius * 0.35, head_y - head_radius * 0.35, head_radius * 0.4, Color::new(1.0, 0.4, 0.35, 0.4));
+
+        // ─── YELLOW EYE MASK (Superhero/bandit style) ───
+        let mask_yellow = Color::new(1.0, 0.85, 0.0, 1.0);
+        let mask_dark = Color::new(0.85, 0.7, 0.0, 1.0);
+
+        // Mask covers the eye area across the face
+        let mask_width = head_radius * 1.3;
+        let mask_height = head_radius * 0.45;
+        let mask_y = head_y - head_radius * 0.1;
+
+        // Main mask shape (elongated oval)
+        draw_ellipse(x, mask_y, mask_width, mask_height, 0.0, mask_yellow);
+
+        // Mask points (superhero style points at the sides)
+        // Left point
+        draw_triangle(
+            Vec2::new(x - mask_width, mask_y),
+            Vec2::new(x - mask_width - size * 0.12, mask_y - size * 0.08),
+            Vec2::new(x - mask_width + size * 0.05, mask_y - mask_height * 0.5),
+            mask_yellow,
+        );
+        // Right point
+        draw_triangle(
+            Vec2::new(x + mask_width, mask_y),
+            Vec2::new(x + mask_width + size * 0.12, mask_y - size * 0.08),
+            Vec2::new(x + mask_width - size * 0.05, mask_y - mask_height * 0.5),
+            mask_yellow,
+        );
+
+        // Mask outline for definition
+        draw_ellipse_lines(x, mask_y, mask_width, mask_height, 0.0, 2.0, mask_dark);
+
+        // ─── EYES (Large, visible through the mask) ───
         let eye_offset_x = size * 0.18;
-        let eye_offset_y = -size * 0.08;
-        let eye_size = size * 0.16;  // Bigger eyes
+        let eye_offset_y = head_y - size * 0.02;
+        let eye_size = size * 0.14;
 
         // Apply rotation to eye positions
-        let left_eye_x = x + ((-eye_offset_x) * cos_r - eye_offset_y * sin_r);
-        let left_eye_y = y + ((-eye_offset_x) * sin_r + eye_offset_y * cos_r);
-        let right_eye_x = x + (eye_offset_x * cos_r - eye_offset_y * sin_r);
-        let right_eye_y = y + (eye_offset_x * sin_r + eye_offset_y * cos_r);
+        let left_eye_x = x + ((-eye_offset_x) * cos_r);
+        let left_eye_y = eye_offset_y + ((-eye_offset_x) * sin_r);
+        let right_eye_x = x + (eye_offset_x * cos_r);
+        let right_eye_y = eye_offset_y + (eye_offset_x * sin_r);
 
-        // Eye shadows
-        draw_circle(left_eye_x + 1.0, left_eye_y + 1.0, eye_size, Color::new(0.0, 0.0, 0.0, 0.3));
-        draw_circle(right_eye_x + 1.0, right_eye_y + 1.0, eye_size, Color::new(0.0, 0.0, 0.0, 0.3));
+        // Eye holes in mask (dark outline)
+        draw_circle(left_eye_x, left_eye_y, eye_size * 1.1, mask_dark);
+        draw_circle(right_eye_x, right_eye_y, eye_size * 1.1, mask_dark);
 
-        // White of eyes (slightly oval for expression)
+        // White of eyes
         draw_circle(left_eye_x, left_eye_y, eye_size, WHITE);
         draw_circle(right_eye_x, right_eye_y, eye_size, WHITE);
-
-        // Eye outline for definition
-        draw_circle_lines(left_eye_x, left_eye_y, eye_size, 1.5, Color::new(0.3, 0.0, 0.0, 0.8));
-        draw_circle_lines(right_eye_x, right_eye_y, eye_size, 1.5, Color::new(0.3, 0.0, 0.0, 0.8));
 
         // Animated pupils based on animation type
         let pupil_offset = match animation_type {
             WhammyAnimationType::Dance => ((self.time * 5.0).sin() * eye_size * 0.3, 0.0),
-            WhammyAnimationType::Jumping => (0.0, -eye_size * 0.3),
-            WhammyAnimationType::Fang => (0.0, eye_size * 0.2),
-            WhammyAnimationType::TNT => ((self.time * 8.0).sin() * eye_size * 0.2, (self.time * 6.0).cos() * eye_size * 0.2),
-            WhammyAnimationType::Pogo => (0.0, (self.time * 10.0).sin().abs() * eye_size * 0.3),
-            _ => ((self.time * 2.0).sin() * eye_size * 0.1, 0.0),  // Subtle look-around
+            WhammyAnimationType::Jumping | WhammyAnimationType::Pogo => (0.0, -eye_size * 0.25),
+            WhammyAnimationType::Fang => (0.0, eye_size * 0.15),
+            WhammyAnimationType::TNT => {
+                ((self.time * 8.0).sin() * eye_size * 0.2, (self.time * 6.0).cos() * eye_size * 0.2)
+            }
+            WhammyAnimationType::LawnMower | WhammyAnimationType::RollerSkating => {
+                ((self.time * 10.0).sin() * eye_size * 0.15, 0.0)
+            }
+            _ => ((self.time * 2.0).sin() * eye_size * 0.08, 0.0),
         };
 
-        // Larger, more expressive pupils
-        let pupil_size = eye_size * 0.55;
-        draw_circle(left_eye_x + pupil_offset.0, left_eye_y + pupil_offset.1, pupil_size, BLACK);
-        draw_circle(right_eye_x + pupil_offset.0, right_eye_y + pupil_offset.1, pupil_size, BLACK);
+        // Pupils (larger, more expressive)
+        let pupil_size = eye_size * 0.5;
+        draw_circle(
+            left_eye_x + pupil_offset.0,
+            left_eye_y + pupil_offset.1,
+            pupil_size, BLACK
+        );
+        draw_circle(
+            right_eye_x + pupil_offset.0,
+            right_eye_y + pupil_offset.1,
+            pupil_size, BLACK
+        );
 
-        // Eye glints (two per eye for more life)
-        let glint_size = eye_size * 0.18;
+        // Eye glints for life
+        let glint_size = eye_size * 0.2;
         draw_circle(left_eye_x - eye_size * 0.25, left_eye_y - eye_size * 0.2, glint_size, WHITE);
-        draw_circle(left_eye_x + eye_size * 0.15, left_eye_y + eye_size * 0.1, glint_size * 0.5, WHITE);
         draw_circle(right_eye_x - eye_size * 0.25, right_eye_y - eye_size * 0.2, glint_size, WHITE);
-        draw_circle(right_eye_x + eye_size * 0.15, right_eye_y + eye_size * 0.1, glint_size * 0.5, WHITE);
 
-        // Mischievous eyebrows that animate
-        let brow_raise = match animation_type {
-            WhammyAnimationType::Fang => -size * 0.02,
-            WhammyAnimationType::Dance => (self.time * 3.0).sin() * size * 0.02,
-            _ => 0.0,
-        };
-        let brow_y = left_eye_y - eye_size - size * 0.02 + brow_raise;
-        draw_line(left_eye_x - eye_size, brow_y + size * 0.02, left_eye_x + eye_size * 0.3, brow_y, 3.0, Color::new(0.3, 0.0, 0.0, 1.0));
-        draw_line(right_eye_x - eye_size * 0.3, brow_y, right_eye_x + eye_size, brow_y + size * 0.02, 3.0, Color::new(0.3, 0.0, 0.0, 1.0));
+        // ─── SMALL TUFT OF HAIR (NOT horns - authentic to the show) ───
+        let hair_base_y = head_y - head_radius;
+        let hair_color = WHAMMY_RED;
+        let hair_dark = Color::new(0.6, 0.0, 0.0, 1.0);
 
-        // ─── HORNS (Curved outward like the authentic character) ───
-        let horn_height = size * 0.28;
-        let horn_base = size * 0.12;
-
-        // Left horn - curved outward
-        let lh_base_x = x - size * 0.32;
-        let lh_base_y = y - size * 0.38;
+        // Small spiky tuft on top of head
+        // Center spike
         draw_triangle(
-            Vec2::new(lh_base_x, lh_base_y),
-            Vec2::new(lh_base_x - horn_base * 0.8, lh_base_y - horn_height),
-            Vec2::new(lh_base_x + horn_base, lh_base_y),
-            Color::new(0.5, 0.0, 0.0, 1.0),
+            Vec2::new(x - size * 0.04, hair_base_y + size * 0.02),
+            Vec2::new(x, hair_base_y - size * 0.12),
+            Vec2::new(x + size * 0.04, hair_base_y + size * 0.02),
+            hair_color,
         );
-        // Horn highlight
+        // Left smaller spike
         draw_triangle(
-            Vec2::new(lh_base_x + horn_base * 0.2, lh_base_y),
-            Vec2::new(lh_base_x - horn_base * 0.5, lh_base_y - horn_height * 0.7),
-            Vec2::new(lh_base_x + horn_base * 0.5, lh_base_y),
-            Color::new(0.7, 0.15, 0.1, 0.6),
+            Vec2::new(x - size * 0.08, hair_base_y + size * 0.04),
+            Vec2::new(x - size * 0.05, hair_base_y - size * 0.06),
+            Vec2::new(x - size * 0.02, hair_base_y + size * 0.02),
+            hair_dark,
+        );
+        // Right smaller spike
+        draw_triangle(
+            Vec2::new(x + size * 0.02, hair_base_y + size * 0.02),
+            Vec2::new(x + size * 0.05, hair_base_y - size * 0.06),
+            Vec2::new(x + size * 0.08, hair_base_y + size * 0.04),
+            hair_dark,
         );
 
-        // Right horn - curved outward (mirrored)
-        let rh_base_x = x + size * 0.32;
-        let rh_base_y = y - size * 0.38;
-        draw_triangle(
-            Vec2::new(rh_base_x - horn_base, rh_base_y),
-            Vec2::new(rh_base_x + horn_base * 0.8, rh_base_y - horn_height),
-            Vec2::new(rh_base_x, rh_base_y),
-            Color::new(0.5, 0.0, 0.0, 1.0),
-        );
-        // Horn highlight
-        draw_triangle(
-            Vec2::new(rh_base_x - horn_base * 0.5, rh_base_y),
-            Vec2::new(rh_base_x + horn_base * 0.5, rh_base_y - horn_height * 0.7),
-            Vec2::new(rh_base_x - horn_base * 0.2, rh_base_y),
-            Color::new(0.7, 0.15, 0.1, 0.6),
-        );
+        // ─── MISCHIEVOUS GRIN ───
+        let mouth_y = head_y + head_radius * 0.5;
+        let mouth_color = BLACK;
 
-        // ─── MOUTH (More expressive, varies by animation) ───
-        let mouth_y = y + size * 0.18;
         match animation_type {
-            WhammyAnimationType::Fang => {
-                // Evil grin with fangs
-                draw_line(x - size * 0.22, mouth_y, x + size * 0.22, mouth_y, 4.0, BLACK);
-                // Fangs (larger, more menacing)
+            WhammyAnimationType::TNT | WhammyAnimationType::Hammer |
+            WhammyAnimationType::RocketShip | WhammyAnimationType::FiringSquad => {
+                // Excited/surprised open mouth (O shape)
+                draw_circle(x, mouth_y, size * 0.08, mouth_color);
+                // Tongue inside
+                draw_circle(x, mouth_y + size * 0.02, size * 0.04, Color::new(0.8, 0.2, 0.2, 1.0));
+            }
+            WhammyAnimationType::Fang | WhammyAnimationType::GrimReaper |
+            WhammyAnimationType::HalloweenVampire => {
+                // Evil toothy grin with fangs showing
+                let grin_width = size * 0.2;
+                // Mouth line
+                draw_line(x - grin_width, mouth_y, x + grin_width, mouth_y, 3.0, mouth_color);
+                // Curved up at corners (evil smile)
+                draw_line(x - grin_width, mouth_y, x - grin_width - size * 0.03, mouth_y - size * 0.04, 3.0, mouth_color);
+                draw_line(x + grin_width, mouth_y, x + grin_width + size * 0.03, mouth_y - size * 0.04, 3.0, mouth_color);
+                // Fangs
                 draw_triangle(
-                    Vec2::new(x - size * 0.12, mouth_y),
-                    Vec2::new(x - size * 0.16, mouth_y + size * 0.12),
                     Vec2::new(x - size * 0.08, mouth_y),
+                    Vec2::new(x - size * 0.1, mouth_y + size * 0.08),
+                    Vec2::new(x - size * 0.06, mouth_y),
                     WHITE,
                 );
                 draw_triangle(
-                    Vec2::new(x + size * 0.12, mouth_y),
-                    Vec2::new(x + size * 0.16, mouth_y + size * 0.12),
                     Vec2::new(x + size * 0.08, mouth_y),
+                    Vec2::new(x + size * 0.1, mouth_y + size * 0.08),
+                    Vec2::new(x + size * 0.06, mouth_y),
                     WHITE,
                 );
             }
-            WhammyAnimationType::TNT | WhammyAnimationType::Hammer => {
-                // Excited open mouth
-                draw_circle(x, mouth_y + size * 0.02, size * 0.12, BLACK);
-                draw_circle(x, mouth_y, size * 0.08, Color::new(0.6, 0.0, 0.0, 1.0));
-            }
-            _ => {
-                // Default mischievous grin (wider, more character)
-                let smile_width = size * 0.24;
-
-                // Draw thicker curved smile
-                for i in 0..25 {
-                    let t = i as f32 / 24.0;
+            WhammyAnimationType::AngelWhammy => {
+                // Innocent smile (small, closed)
+                let smile_width = size * 0.12;
+                for i in 0..20 {
+                    let t = i as f32 / 19.0;
                     let angle = std::f32::consts::PI * t;
-                    let x1 = x - smile_width + (smile_width * 2.0) * t;
-                    let y1 = mouth_y + angle.sin() * size * 0.1;
-
+                    let sx = x - smile_width + (smile_width * 2.0) * t;
+                    let sy = mouth_y + angle.sin() * size * 0.05;
                     if i > 0 {
-                        let prev_t = (i - 1) as f32 / 24.0;
+                        let prev_t = (i - 1) as f32 / 19.0;
                         let prev_angle = std::f32::consts::PI * prev_t;
-                        let x0 = x - smile_width + (smile_width * 2.0) * prev_t;
-                        let y0 = mouth_y + prev_angle.sin() * size * 0.1;
-                        draw_line(x0, y0, x1, y1, 4.0, BLACK);
+                        let prev_sx = x - smile_width + (smile_width * 2.0) * prev_t;
+                        let prev_sy = mouth_y + prev_angle.sin() * size * 0.05;
+                        draw_line(prev_sx, prev_sy, sx, sy, 2.5, mouth_color);
                     }
                 }
             }
+            _ => {
+                // Default mischievous wide grin (signature Whammy expression)
+                let grin_width = size * 0.22;
+                let grin_height = size * 0.12;
+
+                // Draw wide curved grin
+                for i in 0..30 {
+                    let t = i as f32 / 29.0;
+                    let angle = std::f32::consts::PI * t;
+                    let gx = x - grin_width + (grin_width * 2.0) * t;
+                    let gy = mouth_y + angle.sin() * grin_height;
+
+                    if i > 0 {
+                        let prev_t = (i - 1) as f32 / 29.0;
+                        let prev_angle = std::f32::consts::PI * prev_t;
+                        let prev_gx = x - grin_width + (grin_width * 2.0) * prev_t;
+                        let prev_gy = mouth_y + prev_angle.sin() * grin_height;
+                        draw_line(prev_gx, prev_gy, gx, gy, 4.0, mouth_color);
+                    }
+                }
+
+                // Upper lip line for that mischievous look
+                draw_line(x - grin_width, mouth_y, x + grin_width, mouth_y, 2.0, mouth_color);
+
+                // Optional teeth showing for extra mischief
+                let tooth_y = mouth_y + 1.0;
+                draw_rectangle(x - size * 0.05, tooth_y, size * 0.04, size * 0.04, WHITE);
+                draw_rectangle(x + size * 0.01, tooth_y, size * 0.04, size * 0.04, WHITE);
+            }
         }
 
-        // ─── ARMS (Animated stub arms) ───
-        let arm_wave = match animation_type {
-            WhammyAnimationType::Dance => (self.time * 6.0).sin() * size * 0.03,
-            WhammyAnimationType::Pogo => (self.time * 8.0).cos() * size * 0.04,
-            _ => 0.0,
-        };
-        let arm_y = y + size * 0.02;
-        // Arm shadows
-        draw_circle(x - size * 0.42 + 1.0, arm_y + arm_wave + 1.0, size * 0.09, Color::new(0.2, 0.0, 0.0, 0.4));
-        draw_circle(x + size * 0.42 + 1.0, arm_y - arm_wave + 1.0, size * 0.09, Color::new(0.2, 0.0, 0.0, 0.4));
-        // Arms
-        draw_circle(x - size * 0.42, arm_y + arm_wave, size * 0.09, WHAMMY_RED);
-        draw_circle(x + size * 0.42, arm_y - arm_wave, size * 0.09, WHAMMY_RED);
-        // Arm highlights
-        draw_circle(x - size * 0.44, arm_y + arm_wave - size * 0.02, size * 0.04, Color::new(0.95, 0.3, 0.25, 0.5));
-        draw_circle(x + size * 0.40, arm_y - arm_wave - size * 0.02, size * 0.04, Color::new(0.95, 0.3, 0.25, 0.5));
-
-        // ─── LEGS (Little feet that bounce) ───
-        let leg_bounce = match animation_type {
-            WhammyAnimationType::Jumping | WhammyAnimationType::Pogo =>
-                (self.time * 12.0).sin().abs() * size * 0.03,
-            WhammyAnimationType::Dance =>
-                (self.time * 4.0).sin() * size * 0.02,
-            _ => 0.0,
-        };
-        let leg_y = y + size * 0.38;
-        // Leg shadows
-        draw_circle(x - size * 0.16 + 1.0, leg_y + leg_bounce + 1.0, size * 0.11, Color::new(0.2, 0.0, 0.0, 0.4));
-        draw_circle(x + size * 0.16 + 1.0, leg_y + leg_bounce + 1.0, size * 0.11, Color::new(0.2, 0.0, 0.0, 0.4));
-        // Legs/feet
-        draw_circle(x - size * 0.16, leg_y + leg_bounce, size * 0.11, WHAMMY_RED);
-        draw_circle(x + size * 0.16, leg_y + leg_bounce, size * 0.11, WHAMMY_RED);
-        // Leg highlights
-        draw_circle(x - size * 0.18, leg_y + leg_bounce - size * 0.03, size * 0.05, Color::new(0.95, 0.3, 0.25, 0.5));
-        draw_circle(x + size * 0.14, leg_y + leg_bounce - size * 0.03, size * 0.05, Color::new(0.95, 0.3, 0.25, 0.5));
+        // ─── NOSE (Small, cute) ───
+        let nose_y = head_y + head_radius * 0.15;
+        draw_circle(x, nose_y, size * 0.035, Color::new(0.75, 0.05, 0.05, 1.0));
+        draw_circle(x - size * 0.01, nose_y - size * 0.01, size * 0.015, Color::new(1.0, 0.3, 0.3, 0.5));
     }
 
     /// Draw result display in center

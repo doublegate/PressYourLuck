@@ -488,6 +488,41 @@ pub enum WhammyAnimationType {
     Judge,
     /// Clown car with firecracker - "FIRE IN THE HOLE!!!!!"
     ClownCar,
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // SPECIAL OCCASION WHAMMIES (13 total - used only during holidays)
+    // ═══════════════════════════════════════════════════════════════════════
+    /// Thanksgiving 1983-1985: Whammy shoots turkey with musket, explodes on himself
+    /// "Sweet potatoes, cranberries and... the turkey!" "Better luck next time, pilgrim!"
+    ThanksgivingTurkey,
+    /// Christmas 1983-1985: Scrooge Whammy with cane - "Bah! Humbug!"
+    ScroogeWhammy,
+    /// Christmas 1983-1985: Whammy decorates tree, tree falls on him
+    ChristmasTree,
+    /// Valentine's Day: Cupid Whammy shoots arrow, misses and hits himself
+    ValentineCupid,
+    /// Easter: Bunny Whammy with eggs, basket falls apart
+    EasterBunny,
+    /// St. Patrick's Day: Leprechaun Whammy - "Top o' the mornin'! Bottom o' yer wallet!"
+    Leprechaun,
+    /// Fourth of July: Patriotic Whammy with sparkler, firecracker mishap
+    FourthOfJuly,
+    /// Halloween: Vampire Whammy - "I vant to suck your... cash!"
+    HalloweenVampire,
+    /// 1984 Olympics: Whammy as Olympic athlete, trips over hurdle
+    OlympicsWhammy,
+    /// New Year's: Baby New Year Whammy
+    NewYearBaby,
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // WHAMMY-OUT ANIMATIONS (3 special - only shown on 4th Whammy)
+    // ═══════════════════════════════════════════════════════════════════════
+    /// Grim Reaper Whammy escorts contestant out
+    GrimReaper,
+    /// Firing squad Whammy - "Ready! Aim! FIRE!"
+    FiringSquad,
+    /// Angel Whammy floats away with contestant's money to heaven
+    AngelWhammy,
 }
 
 impl WhammyAnimationType {
@@ -566,6 +601,23 @@ impl WhammyAnimationType {
             Self::EyeDoctor => "Read the chart: U-L-O-S-E!",
             Self::Judge => "I sentence you to POVERTY!",
             Self::ClownCar => "FIRE IN THE HOLE!!!!!",
+
+            // Special Occasion Whammies
+            Self::ThanksgivingTurkey => "Sweet potatoes, cranberries and... the turkey!",
+            Self::ScroogeWhammy => "Bah! Humbug! Give me your money! No presents this year!",
+            Self::ChristmasTree => "I wish me a Merry Christmas! ...TIMBER!",
+            Self::ValentineCupid => "Be my valentine! ...OW! Wrong target!",
+            Self::EasterBunny => "Hoppy Easter! ...whoops, there go your eggs!",
+            Self::Leprechaun => "Top o' the mornin'! Bottom o' yer wallet!",
+            Self::FourthOfJuly => "Happy Independence Day! ...KABOOM!",
+            Self::HalloweenVampire => "I vant to suck your... CASH!",
+            Self::OlympicsWhammy => "Going for the gold! ...TRIP!",
+            Self::NewYearBaby => "Happy New Year! Same old Whammy!",
+
+            // Whammy-Out Animations (4th Whammy)
+            Self::GrimReaper => "Your time has come... say goodbye!",
+            Self::FiringSquad => "Ready! Aim! FIRE! Game over!",
+            Self::AngelWhammy => "Your money's going to a better place!",
         }
     }
 
@@ -576,9 +628,48 @@ impl WhammyAnimationType {
             Self::TNT | Self::FlyingCarpet | Self::Orchestra | Self::WaterSkiing => 3.0,
             Self::RocketShip | Self::DixielandBand | Self::BarbershopQuartet => 3.0,
             Self::Supremes | Self::Beatles => 3.5,
+            // Whammy-out animations are longer for dramatic effect
+            Self::GrimReaper | Self::FiringSquad | Self::AngelWhammy => 4.0,
+            // Holiday specials
+            Self::ThanksgivingTurkey | Self::ScroogeWhammy | Self::ChristmasTree => 3.0,
             // Standard animations
             _ => 2.5,
         }
+    }
+
+    /// Check if this is a special occasion (holiday) animation
+    /// Reserved for future seasonal theme support
+    #[allow(dead_code)]
+    pub fn is_holiday_animation(&self) -> bool {
+        matches!(
+            self,
+            Self::ThanksgivingTurkey
+                | Self::ScroogeWhammy
+                | Self::ChristmasTree
+                | Self::ValentineCupid
+                | Self::EasterBunny
+                | Self::Leprechaun
+                | Self::FourthOfJuly
+                | Self::HalloweenVampire
+                | Self::OlympicsWhammy
+                | Self::NewYearBaby
+        )
+    }
+
+    /// Check if this is a Whammy-out animation (4th Whammy special)
+    /// Reserved for future special elimination effects
+    #[allow(dead_code)]
+    pub fn is_whammy_out_animation(&self) -> bool {
+        matches!(
+            self,
+            Self::GrimReaper | Self::FiringSquad | Self::AngelWhammy
+        )
+    }
+
+    /// Pick a random Whammy-out animation (for 4th Whammy elimination)
+    pub fn random_whammy_out() -> Self {
+        let animations = [Self::GrimReaper, Self::FiringSquad, Self::AngelWhammy];
+        *animations.choose(&mut rand::thread_rng()).unwrap_or(&Self::GrimReaper)
     }
 
     /// Pick a random animation (weighted towards classic favorites)
@@ -688,7 +779,18 @@ impl WhammyAnimation {
         self.duration = anim_type.duration();
         self.catchphrase = anim_type.catchphrase().to_string();
     }
-    
+
+    /// Start a Whammy-out animation (for 4th Whammy elimination)
+    /// These are special dramatic animations only shown when a player is eliminated.
+    pub fn start_whammy_out(&mut self) {
+        let anim_type = WhammyAnimationType::random_whammy_out();
+        self.active = true;
+        self.animation_type = anim_type;
+        self.progress = 0.0;
+        self.duration = anim_type.duration();
+        self.catchphrase = anim_type.catchphrase().to_string();
+    }
+
     /// Update animation progress
     pub fn update(&mut self, delta: f32) {
         if self.active {
@@ -1929,10 +2031,10 @@ impl GameState {
                 // Play Whammy sound
                 audio_events.push(AudioEvent::WhammySound);
 
-                // Start random Whammy animation
-                self.whammy_animation.start_random();
-
+                // Check if this is the 4th (eliminating) Whammy
                 if player.whammies >= 4 {
+                    // Use special Whammy-out animation for 4th Whammy
+                    self.whammy_animation.start_whammy_out();
                     player.eliminated = true;
                     audio_events.push(AudioEvent::SadTrombone);
                     self.message = format!(
@@ -1940,6 +2042,8 @@ impl GameState {
                         player.name
                     );
                 } else {
+                    // Start regular random Whammy animation
+                    self.whammy_animation.start_random();
                     self.message = format!(
                         "WHAMMY! {} loses ${} (Whammy #{})!",
                         player.name,

@@ -5,6 +5,43 @@ All notable changes to Press Your Luck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-01-24
+
+### Added
+
+#### Authentic Whammy Character Redesign
+- Completely redesigned Whammy to match original 1983-1986 show character
+- Added yellow superhero-style eye mask with pointed edges
+- Added yellow flowing cape with wave animation
+- Added yellow chest shield with hand-drawn dollar sign ($) emblem
+- Added small tuft of hair (3 spikes) instead of devil horns
+- Added pointy cartoon feet (authentic to original design)
+- Modular drawing system with 7 component functions for maintainability
+
+#### New Whammy Animations (13 additional)
+- Holiday animations: ThanksgivingTurkey, ScroogeWhammy, ChristmasTree, ValentineCupid,
+  EasterBunny, Leprechaun, FourthOfJuly, HalloweenVampire, OlympicsWhammy, NewYearBaby
+- Whammy-out elimination animations: GrimReaper, FiringSquad, AngelWhammy
+- Special 4th-Whammy elimination logic using dramatic animations
+
+#### Animation-Responsive Features
+- Cape waves differently based on action intensity
+- Arms animate for dancing, hammering, jumping, waving
+- Legs animate for running, dancing, jumping
+- Pupils look different directions based on animation type
+- Mouth changes expression (surprised O, evil fangs, innocent smile)
+
+### Changed
+- Total Whammy animation types increased from 53 to 66+
+- Whammy design corrected from generic devil to authentic show character
+
+### Research Sources
+- Press Your Luck Wikipedia and Wikia documentation
+- Savage Steve Holland original animator references
+- Historical episode analysis
+
+---
+
 ## [1.0.0] - 2025-01-24
 
 ### Added
@@ -61,6 +98,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| 1.1.0 | 2025-01-24 | Authentic Whammy redesign, 66+ animations, holiday specials |
 | 1.0.0 | 2025-01-24 | Initial release with full game implementation |
 
+[1.1.0]: https://github.com/doublegate/PressYourLuck/releases/tag/v1.1.0
 [1.0.0]: https://github.com/doublegate/PressYourLuck/releases/tag/v1.0.0

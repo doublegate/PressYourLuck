@@ -5,13 +5,17 @@ with Rod Roddy announcing and Whammy animations by Savage Steve Holland.
 
 ## Features
 
-- **Authentic 18-square Big Board** with cycling prizes
+- **Authentic 18-square Big Board** with cycling prizes and chase lights
 - **3-player format** with question rounds and board rounds
-- **12 unique Whammy animations** with classic catchphrases
+- **66+ unique Whammy animations** with classic catchphrases (regular, holiday, and elimination specials)
+- **Authentic Whammy character** - Yellow cape, eye mask, and dollar sign emblem (researched from original show)
 - **Authentic musical tones** (D, E, G, B♭, D, A♭, F, C...)
-- **Special squares**: Add-A-One, Double Your Money, Pick a Corner, $2000 or Lose Whammy
-- **Proper passing rules** and 4-Whammy elimination
+- **Special squares**: Add-A-One, Double Your Money, Pick a Corner, Big Bucks, Take the Lead
+- **Proper passing rules** and 4-Whammy elimination with special "Whammy-out" animations
 - **Procedurally generated audio** (no external files needed)
+- **CRT visual effects**: Scanlines, vignette, phosphor glow, color fringing
+- **LED-style score displays** with rolling number animations
+- **Tension music** during board spins with authentic deceleration curve
 
 ## Building
 
@@ -101,6 +105,22 @@ src/
 - **Audio**: Procedurally generated WAV at 44.1kHz, 16-bit mono
 - **Graphics**: Vector-based rendering with animated effects
 - **Platform**: Linux (primary), Windows, macOS, WebAssembly
+
+## The Whammy Character
+
+The Whammy was designed by animator **Savage Steve Holland**, who sketched the original
+concept on a napkin. Contrary to popular belief, the Whammy is NOT a devil - it's a
+mischievous cartoon anti-hero featuring:
+
+- **Yellow superhero-style eye mask** with pointed edges
+- **Yellow flowing cape** that waves during animations
+- **Yellow chest shield** with a dollar sign ($) emblem
+- **Small tuft of hair** (not devil horns!)
+- **Pointy feet** and expressive cartoon limbs
+- **Mischievous grin** that changes based on the animation
+
+This implementation includes 66+ authentic animation types including holiday specials
+(Thanksgiving, Christmas, Halloween, etc.) and dramatic "Whammy-out" elimination animations.
 
 ## Historical Notes
 
