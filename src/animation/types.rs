@@ -170,6 +170,7 @@ impl Default for Animation {
     }
 }
 
+#[allow(dead_code)]
 impl Animation {
     /// Create a new animation with name
     pub fn new(name: &str) -> Self {

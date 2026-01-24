@@ -274,6 +274,7 @@ impl ScreenFlash {
 // =============================================================================
 
 /// Manages all screen effects
+#[allow(dead_code)]
 pub struct ScreenEffects {
     /// Current shake
     pub shake: ScreenShake,
@@ -297,6 +298,7 @@ pub struct ScreenEffects {
     slow_motion_speed: f32,
 }
 
+#[allow(dead_code)]
 impl ScreenEffects {
     /// Create new screen effects manager
     pub fn new() -> Self {

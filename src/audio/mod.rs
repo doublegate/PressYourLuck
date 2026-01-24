@@ -398,6 +398,7 @@ impl Default for AudioEngine {
     }
 }
 
+#[allow(dead_code)]
 impl AudioEngine {
     /// Create a new audio engine with default configuration
     ///

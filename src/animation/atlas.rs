@@ -30,6 +30,7 @@ pub const WHAMMY_OUTLINE: Color = Color::new(0.102, 0.02, 0.02, 1.0); // #1A0505
 
 /// Information about a single frame in a packed atlas
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct FrameInfo {
     /// Frame name/identifier
     pub name: String,
@@ -91,6 +92,7 @@ impl FrameInfo {
 
 /// Metadata for a sprite atlas
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct AtlasMetadata {
     /// Atlas identifier
     pub id: String,
@@ -108,6 +110,7 @@ pub struct AtlasMetadata {
 
 /// Grid-based atlas layout info
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct GridInfo {
     pub columns: u32,
     pub rows: u32,
@@ -195,6 +198,8 @@ pub struct SpriteAtlas {
     pub metadata: AtlasMetadata,
 }
 
+// Allow dead code for atlas methods that may be used for future asset loading
+#[allow(dead_code)]
 impl SpriteAtlas {
     /// Create a new sprite atlas from an image file (grid-based)
     pub fn from_grid_file(

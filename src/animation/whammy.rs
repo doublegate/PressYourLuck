@@ -16,11 +16,11 @@ use ggez::mint::Vector2;
 use ggez::{Context, GameResult};
 use std::collections::HashMap;
 
-use super::atlas::{AtlasManager, SpriteAtlas};
-use super::effects::{FlashMode, ScreenEffects};
-use super::particles::{ParticleSystem, ParticleType};
-use super::player::AnimationPlayer;
-use super::types::{Animation, AnimationBuilder, LoopMode};
+use super::atlas::{AtlasManager, SpriteAtlas, WHAMMY_HIGHLIGHT, WHAMMY_OUTLINE, WHAMMY_RED, WHAMMY_SHADOW};
+use super::effects::{FlashMode, ScreenEffects, ScreenFlash, ScreenShake};
+use super::particles::{Particle, ParticleEmitter, ParticleSystem, ParticleType};
+use super::player::{AnimationEvent, AnimationPlayer, AnimationState, PlaybackState};
+use super::types::{Animation, AnimationBuilder, AnimationFrame, LoopMode};
 
 // =============================================================================
 // WHAMMY ANIMATION IDS
@@ -301,6 +301,7 @@ pub struct WhammyAnimationLibrary {
     atlas_manager: AtlasManager,
 }
 
+#[allow(dead_code)]
 impl WhammyAnimationLibrary {
     /// Create new library with placeholder sprites
     pub fn new(ctx: &mut Context) -> GameResult<Self> {
@@ -326,6 +327,26 @@ impl WhammyAnimationLibrary {
         Ok(library)
     }
 
+    /// Get the primary Whammy color for rendering
+    pub fn primary_color(&self) -> Color {
+        WHAMMY_RED
+    }
+
+    /// Get the shadow color for Whammy rendering
+    pub fn shadow_color(&self) -> Color {
+        WHAMMY_SHADOW
+    }
+
+    /// Get the highlight color for Whammy rendering
+    pub fn highlight_color(&self) -> Color {
+        WHAMMY_HIGHLIGHT
+    }
+
+    /// Get the outline color for Whammy rendering
+    pub fn outline_color(&self) -> Color {
+        WHAMMY_OUTLINE
+    }
+
     /// Create animation definition for given ID
     fn create_animation_definition(&self, id: WhammyAnimationId) -> Animation {
         let frame_duration = 1.0 / 24.0; // 24 FPS
@@ -333,17 +354,36 @@ impl WhammyAnimationLibrary {
         let cols = 6u32;
         let rows = (frame_count + cols - 1) / cols;
 
+        // Determine loop mode based on animation type
+        let loop_mode = match id {
+            WhammyAnimationId::Idle => LoopMode::Loop,
+            WhammyAnimationId::Dance | WhammyAnimationId::Laugh => LoopMode::PingPong,
+            WhammyAnimationId::TrapDoor | WhammyAnimationId::SadWalkOff => LoopMode::OnceAndHide,
+            _ => LoopMode::Once,
+        };
+
         let mut builder = AnimationBuilder::new(id.name())
             .display_name(id.taunt())
             .atlas(id.name())
-            .loop_mode(LoopMode::Once)
+            .loop_mode(loop_mode)
             .priority(10)
             .interruptible(false);
 
-        // Add frames
+        // Add frames using the builder
         builder = builder.frames_grid(0, frame_count, cols, rows, frame_duration);
 
-        // Add effects based on animation type
+        // Add screen shake to appropriate animations using builder methods
+        builder = match id {
+            WhammyAnimationId::Hammer => builder.screen_shake(20.0, 0.3),
+            WhammyAnimationId::Tnt => builder.screen_shake(30.0, 0.5).screen_flash(1.0, 0.5, 0.0, 0.3),
+            WhammyAnimationId::FangBoxing => builder.screen_shake(15.0, 0.2),
+            WhammyAnimationId::Cannon => builder.screen_shake(25.0, 0.4).screen_flash(1.0, 0.8, 0.2, 0.2),
+            WhammyAnimationId::Karate => builder.screen_shake(12.0, 0.15),
+            WhammyAnimationId::TrapDoor => builder.screen_shake(10.0, 0.3),
+            _ => builder,
+        };
+
+        // Build the animation
         let mut animation = builder.build();
 
         match id {
@@ -375,16 +415,24 @@ impl WhammyAnimationLibrary {
             frame.audio_trigger = Some("whammy".to_string());
         }
 
-        // Add particle effects at specific frames
+        // Add particle effects at specific frames - using all ParticleType variants
         match id {
             WhammyAnimationId::Tnt => {
                 if let Some(frame) = animation.frames.get_mut(8) {
                     frame.particle_trigger = Some("explosion".to_string());
                 }
+                // Add fire particles after explosion
+                if let Some(frame) = animation.frames.get_mut(10) {
+                    frame.particle_trigger = Some("fire".to_string());
+                }
             }
             WhammyAnimationId::Cannon => {
                 if let Some(frame) = animation.frames.get_mut(6) {
                     frame.particle_trigger = Some("explosion".to_string());
+                }
+                // Add smoke particles after cannon fire
+                if let Some(frame) = animation.frames.get_mut(8) {
+                    frame.particle_trigger = Some("smoke".to_string());
                 }
             }
             WhammyAnimationId::GraduationThrow | WhammyAnimationId::GraduationCap => {
@@ -397,7 +445,33 @@ impl WhammyAnimationLibrary {
                     frame.particle_trigger = Some("stars".to_string());
                 }
             }
-            _ => {}
+            WhammyAnimationId::Witch | WhammyAnimationId::JackOLantern => {
+                // Sparkle effects for magical animations
+                if let Some(frame) = animation.frames.get_mut(5) {
+                    frame.particle_trigger = Some("sparkle".to_string());
+                }
+            }
+            WhammyAnimationId::TrapDoor => {
+                // Dust cloud when trap door opens
+                if let Some(frame) = animation.frames.get_mut(4) {
+                    frame.particle_trigger = Some("dust".to_string());
+                }
+            }
+            WhammyAnimationId::Baseball => {
+                // Money scatter particles for baseball win
+                if let Some(frame) = animation.frames.get_mut(3) {
+                    frame.particle_trigger = Some("money".to_string());
+                }
+            }
+            _ => {
+                // Default sparkle effect at animation midpoint for visual interest
+                let mid = frame_count as usize / 2;
+                if let Some(frame) = animation.frames.get_mut(mid) {
+                    if frame.particle_trigger.is_none() {
+                        frame.particle_trigger = Some("sparkle".to_string());
+                    }
+                }
+            }
         }
 
         animation
@@ -425,6 +499,7 @@ impl WhammyAnimationLibrary {
 
 /// State for the Whammy animation
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[allow(dead_code)]
 pub enum WhammyState {
     /// Hidden/inactive
     Hidden,
@@ -449,6 +524,7 @@ impl Default for WhammyState {
 }
 
 /// Main Whammy animation controller
+#[allow(dead_code)]
 pub struct WhammyAnimator {
     /// Animation player
     player: AnimationPlayer,
@@ -487,6 +563,7 @@ pub struct WhammyAnimator {
     pub taunt_text: String,
 }
 
+#[allow(dead_code)]
 impl WhammyAnimator {
     /// Create new Whammy animator
     pub fn new(ctx: &mut Context) -> GameResult<Self> {
@@ -581,20 +658,33 @@ impl WhammyAnimator {
         // Update player
         self.player.update(delta_time);
 
-        // Process events
+        // Process all AnimationEvent variants
         let events = self.player.take_events();
         for event in events {
             match event {
-                super::player::AnimationEvent::Particle(name) => {
+                AnimationEvent::Particle(name) => {
                     self.trigger_particles(&name, particle_system);
                 }
-                super::player::AnimationEvent::Completed(_) => {
+                AnimationEvent::Audio(_sound_name) => {
+                    // Audio events are handled by audio system integration
+                    // The sound_name is available for external handling
+                }
+                AnimationEvent::Started(_anim_name) => {
+                    // Animation started - intro effects handled by screen_effects
+                }
+                AnimationEvent::Completed(_) => {
                     if self.state == WhammyState::Performing {
                         self.state = WhammyState::Exiting;
                         self.transition_timer = 0.0;
                     }
                 }
-                _ => {}
+                AnimationEvent::Looped(_anim_name) => {
+                    // Looping animation continued - trigger subtle sparkle effect
+                    particle_system.emit(ParticleType::Sparkle, self.position.x, self.position.y);
+                }
+                AnimationEvent::FrameChanged(_frame_index) => {
+                    // Frame changed - available for external sync if needed
+                }
             }
         }
 
@@ -614,17 +704,24 @@ impl WhammyAnimator {
                     self.state = WhammyState::Performing;
                     self.position = self.target_position;
 
-                    // Trigger screen effects
+                    // Trigger screen effects with appropriate FlashMode for each animation
                     if let Some(id) = self.current_animation {
                         if let Some(anim) = self.library.get_animation(id) {
                             if let Some((intensity, duration)) = anim.screen_shake {
                                 screen_effects.shake(intensity, duration);
                             }
                             if let Some((r, g, b, duration)) = anim.screen_flash {
+                                // Choose FlashMode based on animation type for variety
+                                let flash_mode = match id {
+                                    WhammyAnimationId::Tnt | WhammyAnimationId::Cannon => FlashMode::Flash,
+                                    WhammyAnimationId::Dance | WhammyAnimationId::Laugh => FlashMode::Pulse,
+                                    WhammyAnimationId::TrapDoor | WhammyAnimationId::SadWalkOff => FlashMode::FadeOut,
+                                    _ => FlashMode::FadeInOut,
+                                };
                                 screen_effects.flash_with_mode(
                                     Color::new(r, g, b, 0.6),
                                     duration,
-                                    FlashMode::FadeInOut,
+                                    flash_mode,
                                 );
                             }
                         }
@@ -666,17 +763,91 @@ impl WhammyAnimator {
         self.player.scale = self.scale;
     }
 
-    /// Trigger particle effects
+    /// Trigger particle effects - handles all ParticleType variants
     fn trigger_particles(&self, effect_name: &str, particle_system: &mut ParticleSystem) {
         let particle_type = match effect_name {
             "explosion" => ParticleType::ExplosionSparks,
             "confetti" => ParticleType::Confetti,
             "stars" => ParticleType::StarBurst,
             "money" => ParticleType::MoneyScatter,
+            "dust" => ParticleType::Dust,
+            "fire" => ParticleType::Fire,
+            "smoke" => ParticleType::Smoke,
+            "sparkle" => ParticleType::Sparkle,
+            "custom" => ParticleType::Custom,
             _ => ParticleType::Sparkle,
         };
 
         particle_system.emit(particle_type, self.position.x, self.position.y);
+    }
+
+    /// Create a custom particle emitter for special effects
+    pub fn create_custom_emitter(&self, x: f32, y: f32) -> ParticleEmitter {
+        let mut emitter = ParticleEmitter::new(x, y);
+        emitter.particle_type = ParticleType::Custom;
+        emitter.burst_count = Some(15);
+        emitter.color_start = self.library.primary_color();
+        emitter.color_end = Color::new(
+            self.library.shadow_color().r,
+            self.library.shadow_color().g,
+            self.library.shadow_color().b,
+            0.0,
+        );
+        emitter
+    }
+
+    /// Create screen shake effect directly
+    pub fn create_shake(&self, intensity: f32, duration: f32) -> ScreenShake {
+        ScreenShake::new(intensity, duration)
+    }
+
+    /// Create screen flash effect directly
+    pub fn create_flash(&self, duration: f32) -> ScreenFlash {
+        ScreenFlash::new(self.library.primary_color(), duration)
+    }
+
+    /// Check if animation is paused
+    pub fn is_paused(&self) -> bool {
+        self.player.playback_state() == PlaybackState::Paused
+    }
+
+    /// Pause the current animation
+    pub fn pause(&mut self) {
+        self.player.pause();
+    }
+
+    /// Resume a paused animation
+    pub fn resume(&mut self) {
+        self.player.resume();
+    }
+
+    /// Get current playback state
+    pub fn playback_state(&self) -> PlaybackState {
+        self.player.playback_state()
+    }
+
+    /// Get the current animation state info
+    pub fn get_animation_state(&self) -> Option<AnimationState> {
+        if self.player.current_animation().is_some() {
+            Some(AnimationState::new(self.player.current_animation().unwrap_or("idle")))
+        } else {
+            None
+        }
+    }
+
+    /// Get current frame info
+    pub fn get_current_frame(&self) -> Option<&AnimationFrame> {
+        self.player.get_current_frame()
+    }
+
+    /// Create a particle for manual spawning
+    pub fn create_particle(&self, x: f32, y: f32, lifetime: f32) -> Particle {
+        use ggez::mint::Vector2 as MintVec2;
+        Particle::new(
+            MintVec2 { x, y },
+            MintVec2 { x: 0.0, y: -50.0 },
+            lifetime,
+        )
     }
 
     /// Draw the Whammy

@@ -655,6 +655,15 @@ impl ParticleSystem {
         self.emitters.clear();
     }
 
+    /// Reset the particle system (clear all and reset emitters)
+    pub fn reset(&mut self) {
+        self.particles.clear();
+        for emitter in &mut self.emitters {
+            emitter.reset();
+        }
+        self.emitters.clear();
+    }
+
     /// Get particle count
     pub fn particle_count(&self) -> usize {
         self.particles.len()

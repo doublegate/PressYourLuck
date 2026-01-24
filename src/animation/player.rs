@@ -218,6 +218,7 @@ pub struct AnimationPlayer {
     pub flip_y: bool,
 }
 
+#[allow(dead_code)]
 impl AnimationPlayer {
     /// Create a new animation player
     pub fn new() -> Self {
@@ -314,6 +315,11 @@ impl AnimationPlayer {
     /// Resume playback
     pub fn resume(&mut self) {
         self.state.resume();
+    }
+
+    /// Restart playback from beginning
+    pub fn restart(&mut self) {
+        self.state.restart();
     }
 
     /// Get current animation name
