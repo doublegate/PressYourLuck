@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### CI/CD Workflow Fixes
 - Fixed incorrect GitHub Action reference (`dtolnay/rust-action` → `dtolnay/rust-toolchain`)
+- Added `libudev-dev` dependency to CI workflow (required by ggez for gamepad support)
 - All CI jobs now pass: check, clippy, format, build
 
 #### Code Quality (Clippy Compliance)
@@ -20,6 +21,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `#[allow(clippy::too_many_arguments)]` to 8 rendering functions
 - Added `#[derive(Default)]` to `AudioEngine` struct
 - Fixed documentation comment formatting
+
+### Changed
+
+#### Project Metadata Updates
+- Updated author to DoubleGate <parobek@gmail.com>
+- Updated GitHub repository description and topics
+- Topics: rust, game, gameshow, press-your-luck, whammy, trivia, ggez, retro-gaming, 1980s
 
 ---
 
