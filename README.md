@@ -22,17 +22,17 @@ with Rod Roddy announcing and Whammy animations by Savage Steve Holland.
 ### Prerequisites
 
 - Rust 1.70 or later
-- On Linux: `libasound2-dev` (ALSA development libraries)
+- On Linux: `libasound2-dev` and `libudev-dev` (ALSA and udev development libraries)
 
 ```bash
 # Ubuntu/Debian
-sudo apt install libasound2-dev
+sudo apt install libasound2-dev libudev-dev
 
 # Fedora
-sudo dnf install alsa-lib-devel
+sudo dnf install alsa-lib-devel libudev-devel
 
 # Arch/CachyOS
-sudo pacman -S alsa-lib
+sudo pacman -S alsa-lib systemd-libs
 ```
 
 ### Development Build

@@ -307,7 +307,7 @@ fn main() -> GameResult {
     println!("======================================================================");
 
     // Build context with window configuration
-    let (mut ctx, event_loop) = ContextBuilder::new("press-your-luck", "Luke Parobek")
+    let (mut ctx, event_loop) = ContextBuilder::new("press-your-luck", "DoubleGate")
         .window_setup(WindowSetup::default().title("Press Your Luck - Big Bucks! No Whammies!"))
         .window_mode(
             WindowMode::default()
