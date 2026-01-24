@@ -2080,6 +2080,59 @@ impl GraphicsRenderer {
         }
     }
 
+    /// Draw Whammy taunt text (for new animation system integration)
+    ///
+    /// Called when WhammyAnimator is playing to display the taunt/catchphrase
+    /// in a speech bubble style below the Whammy character.
+    pub fn draw_whammy_taunt(
+        &self,
+        canvas: &mut Canvas,
+        ctx: &mut Context,
+        taunt_text: &str,
+        screen_w: f32,
+        screen_h: f32,
+    ) {
+        if taunt_text.is_empty() {
+            return;
+        }
+
+        // Position the speech bubble in the lower center area
+        let bubble_x = screen_w * 0.2;
+        let bubble_y = screen_h * 0.7;
+        let bubble_w = screen_w * 0.6;
+        let text_size = screen_w * 0.025;
+        let bubble_h = text_size + 20.0;
+
+        // Speech bubble background
+        if let Ok(bubble) = Mesh::new_rectangle(
+            ctx,
+            DrawMode::fill(),
+            Rect::new(bubble_x, bubble_y, bubble_w, bubble_h),
+            WHITE,
+        ) {
+            canvas.draw(&bubble, DrawParam::default());
+        }
+
+        // Speech bubble border
+        if let Ok(border) = Mesh::new_rectangle(
+            ctx,
+            DrawMode::stroke(3.0),
+            Rect::new(bubble_x, bubble_y, bubble_w, bubble_h),
+            BLACK,
+        ) {
+            canvas.draw(&border, DrawParam::default());
+        }
+
+        // Taunt text
+        let text = Text::new(TextFragment::new(taunt_text).scale(text_size));
+        canvas.draw(
+            &text,
+            DrawParam::default()
+                .dest([bubble_x + 15.0, bubble_y + 10.0])
+                .color(BLACK),
+        );
+    }
+
     /// Draw control hints
     pub fn draw_controls(
         &self,

@@ -56,6 +56,7 @@ mod game;
 mod gfx;
 mod ui;
 
+use animation::{ParticleSystem, ScreenEffects, WhammyAnimator};
 use audio::AudioEngine;
 use game::{GamePhase, GameState, InputAction};
 use gfx::GraphicsRenderer;
@@ -67,16 +68,29 @@ struct PressYourLuck {
     audio_engine: AudioEngine,
     graphics_renderer: GraphicsRenderer,
     ui_manager: UiManager,
+    /// Whammy character animator (Phase 2: Animation System)
+    whammy_animator: WhammyAnimator,
+    /// Particle system for visual effects (Phase 2: Animation System)
+    particle_system: ParticleSystem,
+    /// Screen effects (shake, flash) (Phase 2: Animation System)
+    screen_effects: ScreenEffects,
 }
 
 impl PressYourLuck {
     /// Create a new game instance
     fn new(ctx: &mut Context) -> GameResult<Self> {
+        // Initialize particle system and its meshes
+        let mut particle_system = ParticleSystem::new(1000);
+        particle_system.init_meshes(ctx)?;
+
         Ok(Self {
             game_state: GameState::new(),
             audio_engine: AudioEngine::new(ctx)?,
             graphics_renderer: GraphicsRenderer::new(),
             ui_manager: UiManager::new(),
+            whammy_animator: WhammyAnimator::new(ctx)?,
+            particle_system,
+            screen_effects: ScreenEffects::new(),
         })
     }
 
@@ -165,7 +179,9 @@ impl PressYourLuck {
 
 impl EventHandler for PressYourLuck {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
-        let delta_time = ctx.time.delta().as_secs_f32().min(0.1);
+        // Apply slow motion from screen effects if active
+        let time_scale = self.screen_effects.get_time_scale();
+        let delta_time = (ctx.time.delta().as_secs_f32() * time_scale).min(0.1);
 
         // Update game state
         let audio_events = self.game_state.update(delta_time);
@@ -180,6 +196,42 @@ impl EventHandler for PressYourLuck {
         self.graphics_renderer
             .update_animations(&self.game_state, delta_time);
 
+        // Update screen effects (shake, flash)
+        self.screen_effects.update(delta_time);
+
+        // Update particle system
+        self.particle_system.update(delta_time);
+
+        // Update Whammy animator if playing
+        if self.whammy_animator.is_playing() {
+            self.whammy_animator.update(
+                delta_time,
+                &mut self.screen_effects,
+                &mut self.particle_system,
+            );
+        }
+
+        // Check if game triggered a Whammy animation
+        if self.game_state.whammy_animation.active && !self.whammy_animator.is_playing() {
+            // Calculate center stage position
+            let (screen_w, screen_h) = ctx.gfx.drawable_size();
+            let center_x = screen_w / 2.0;
+            let center_y = screen_h / 2.0;
+
+            // Start random Whammy animation
+            self.whammy_animator.play_random_all(center_x, center_y);
+
+            // Trigger Whammy screen effect
+            self.screen_effects.whammy_effect();
+        }
+
+        // Sync Whammy animation state back to game state
+        if !self.whammy_animator.is_playing() && self.game_state.whammy_animation.active {
+            // Animation completed
+            self.game_state.whammy_animation.active = false;
+            self.game_state.whammy_animation.progress = 1.0;
+        }
+
         Ok(())
     }
 
@@ -189,6 +241,17 @@ impl EventHandler for PressYourLuck {
 
         // Get screen dimensions
         let (screen_w, screen_h) = ctx.gfx.drawable_size();
+
+        // Apply screen shake offset if active
+        let shake_offset = self.screen_effects.get_shake_offset();
+        if shake_offset.x.abs() > 0.01 || shake_offset.y.abs() > 0.01 {
+            canvas.set_screen_coordinates(ggez::graphics::Rect::new(
+                -shake_offset.x,
+                -shake_offset.y,
+                screen_w,
+                screen_h,
+            ));
+        }
 
         // Draw game elements in Z-order (back to front)
         self.graphics_renderer
@@ -211,13 +274,36 @@ impl EventHandler for PressYourLuck {
             screen_w,
             screen_h,
         );
-        self.graphics_renderer.draw_center_stage(
-            &mut canvas,
-            ctx,
-            &self.game_state,
-            screen_w,
-            screen_h,
-        );
+
+        // Draw center stage (including Whammy from new animator if playing)
+        if self.whammy_animator.is_playing() {
+            // Draw Whammy using new animator
+            self.whammy_animator.draw(&mut canvas, ctx);
+
+            // Draw taunt text if available
+            if !self.whammy_animator.taunt_text.is_empty() {
+                self.graphics_renderer.draw_whammy_taunt(
+                    &mut canvas,
+                    ctx,
+                    &self.whammy_animator.taunt_text,
+                    screen_w,
+                    screen_h,
+                );
+            }
+        } else {
+            // Use legacy center stage drawing
+            self.graphics_renderer.draw_center_stage(
+                &mut canvas,
+                ctx,
+                &self.game_state,
+                screen_w,
+                screen_h,
+            );
+        }
+
+        // Draw particles (after Whammy, before UI)
+        self.particle_system.draw(&mut canvas, ctx);
+
         self.graphics_renderer.draw_action_buttons(
             &mut canvas,
             ctx,
@@ -247,6 +333,9 @@ impl EventHandler for PressYourLuck {
         // UI overlay
         self.ui_manager
             .draw(&mut canvas, ctx, &self.game_state, screen_w, screen_h);
+
+        // Screen effects overlay (flash, vignette)
+        self.screen_effects.draw(&mut canvas, ctx, screen_w, screen_h);
 
         // Debug info in development builds
         #[cfg(debug_assertions)]
