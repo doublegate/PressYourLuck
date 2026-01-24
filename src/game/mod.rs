@@ -1220,7 +1220,7 @@ impl GameState {
         // Initialize random prize indices
         let mut rng = rand::rng();
         for square in &mut state.board {
-            square.current_index = rng.random_range(0..3);
+            square.current_index = rng.gen_range(0..3);
         }
 
         state
