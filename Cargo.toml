@@ -20,7 +20,7 @@
 
 [package]
 name = "press-your-luck"
-version = "2.0.1"
+version = "2.0.2"
 edition = "2021"
 authors = ["DoubleGate <parobek@gmail.com>"]
 description = "Authentic recreation of the 1983-1986 CBS game show Press Your Luck"

@@ -5,6 +5,25 @@ All notable changes to Press Your Luck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.2] - 2025-01-24
+
+### Changed
+
+#### Dependency Updates
+- Updated `rand` crate from 0.8.5 to 0.9.2
+- Updated GitHub Actions `actions/checkout` from v4 to v6
+- Updated GitHub Actions `actions/cache` from v4 to v5
+
+#### API Migration
+- Migrated `gen_range()` to `random_range()` for rand 0.9 compatibility
+- Updated all random number generation calls throughout codebase
+
+### Technical
+- All existing tests pass with updated dependencies
+- No breaking changes to game functionality
+
+---
+
 ## [2.0.1] - 2025-01-24
 
 ### Fixed
@@ -148,11 +167,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| 2.0.2 | 2025-01-24 | Dependency updates (rand 0.9.2, actions v6/v5) |
 | 2.0.1 | 2025-01-24 | CI/CD fixes, clippy compliance |
 | 2.0.0 | 2025-01-24 | Framework migration to ggez 0.9, security fix |
 | 1.1.0 | 2025-01-24 | Authentic Whammy redesign, 66+ animations, holiday specials |
 | 1.0.0 | 2025-01-24 | Initial release with full game implementation |
 
+[2.0.2]: https://github.com/doublegate/PressYourLuck/releases/tag/v2.0.2
 [2.0.1]: https://github.com/doublegate/PressYourLuck/releases/tag/v2.0.1
 [2.0.0]: https://github.com/doublegate/PressYourLuck/releases/tag/v2.0.0
 [1.1.0]: https://github.com/doublegate/PressYourLuck/releases/tag/v1.1.0
