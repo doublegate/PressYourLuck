@@ -1955,7 +1955,7 @@ impl GameState {
         self.spin_speed = 1.0; // Full speed
         self.spin_decelerating = false;
         self.spin_target_square = None;
-        self.light_speed = 15.0 + rand::rng().random_range(0.0..5.0);
+        self.light_speed = 15.0 + rand::rng().gen_range(0.0..5.0);
         self.message = "Press SPACE to stop!".to_string();
     }
 
