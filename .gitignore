@@ -17,6 +17,7 @@ release/
 # OS files
 .DS_Store
 Thumbs.db
+.directory
 
 # Local configuration
 *.local
@@ -34,3 +35,8 @@ CLAUDE.local.md
 *.profraw
 perf.data
 flamegraph.svg
+
+# Coverage reports
+tarpaulin-report.html
+lcov.info
+coverage/

@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Press Your Luck is an authentic recreation of the 1983-1986 CBS game show, built in Rust using the macroquad game framework. The game features procedurally generated audio (no external files), vector-based graphics, and implements the complete game rules including question rounds, the Big Board, passing mechanics, and 4-Whammy elimination.
+Press Your Luck is an authentic recreation of the 1983-1986 CBS game show, built in Rust using the ggez game framework (v0.9). The game features procedurally generated audio (no external files), vector-based graphics with Canvas/Mesh rendering, and implements the complete game rules including question rounds, the Big Board, passing mechanics, and 4-Whammy elimination.
+
+**Current Version**: 2.0.2
 
 ## Build Commands
 
@@ -29,16 +31,16 @@ cargo clippy -- -D warnings
 
 ### Linux Prerequisites
 
-Requires ALSA development libraries:
+Requires ALSA and udev development libraries:
 ```bash
 # Ubuntu/Debian
-sudo apt install libasound2-dev
+sudo apt install libasound2-dev libudev-dev
 
 # Fedora
-sudo dnf install alsa-lib-devel
+sudo dnf install alsa-lib-devel libudev-devel
 
 # Arch/CachyOS
-sudo pacman -S alsa-lib
+sudo pacman -S alsa-lib systemd-libs
 ```
 
 ## Architecture
@@ -47,20 +49,24 @@ The codebase follows a modular architecture with clear separation between game l
 
 ```
 src/
-├── main.rs      # Entry point, game loop, input processing
+├── main.rs      # Entry point, ggez EventHandler, game loop
 ├── game/mod.rs  # Game state, rules, all game logic
-├── audio/mod.rs # Procedural sound synthesis (WAV generation)
-├── graphics/mod.rs # Big Board rendering, animations
+├── audio/mod.rs # Procedural sound synthesis (ggez audio)
+├── gfx/mod.rs   # Big Board rendering, animations (ggez graphics)
 └── ui/mod.rs    # Overlay UI (questions, menus, game over)
 ```
 
 ### Key Architectural Patterns
+
+**ggez EventHandler**: The game implements `ggez::event::EventHandler` trait for the main game loop, providing `update()` and `draw()` methods with proper Context passing.
 
 **Event-Driven Audio**: `GameState::update()` returns `Vec<AudioEvent>` which the main loop passes to `AudioEngine::handle_event()`. Audio is never triggered directly from game logic.
 
 **Procedural Audio**: All sounds are synthesized mathematically at 44.1kHz 16-bit PCM using waveform generation with ADSR envelopes. No external audio files are needed. Board tones follow an authentic 18-note musical sequence.
 
 **State Machine**: Game flow is controlled by `GamePhase` enum (Start, Questions, Board, GameOver). The `QuestionState` and `ResultState` structs manage sub-states within phases.
+
+**Canvas/Mesh Rendering**: Graphics use ggez Canvas and Mesh pattern for efficient 2D rendering with the wgpu backend.
 
 **Frame-Rate Independence**: All animations use `delta_time` for smooth rendering across different refresh rates.
 
@@ -70,7 +76,7 @@ src/
 - `BoardSquare`: Contains 3 cycling `Prize` variants that rotate every second
 - `Prize`/`PrizeType`: Enum variants for Cash, Prize (physical), Whammy, and Special actions
 - `Contestant`: Player data including earned/passed spins, whammies, elimination status
-- `WhammyAnimation`: 12 animation types with catchphrases (Pogo, TNT, Hammer, etc.)
+- `WhammyAnimation`: 66+ animation types with catchphrases including holiday specials and elimination animations
 
 ### Board Layout
 
@@ -86,6 +92,6 @@ The Big Board is an 18-square perimeter around a center display area. Squares ar
 
 ## Dependencies
 
-- `macroquad 0.4` with audio feature - cross-platform 2D game framework
-- `rand/fastrand` - random number generation for board patterns
-- `serde/serde_json` - serialization (save/load ready)
+- `ggez 0.9` - Rust game library (wgpu backend, rodio audio)
+- `rand 0.9` / `fastrand 2.0` - random number generation for board patterns
+- `serde` / `serde_json 1.0` - serialization (save/load ready)
