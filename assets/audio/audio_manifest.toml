@@ -1,0 +1,641 @@
+# ============================================================================
+# PRESS YOUR LUCK - Audio Manifest
+# ============================================================================
+# This manifest defines all audio assets for the game, including file paths,
+# volume levels, categories, and fallback behavior.
+#
+# File Format Priority: OGG Vorbis (.ogg) primary, WAV (.wav) fallback
+# Sample Rate: 44,100 Hz
+# Channels: Mono for effects, Stereo for music
+#
+# If an audio file is not found, the system falls back to procedural generation.
+# ============================================================================
+
+[meta]
+version = "1.0.0"
+description = "Press Your Luck Audio Asset Manifest"
+
+# ============================================================================
+# THEME MUSIC
+# ============================================================================
+# Main music tracks used throughout the game
+# These are stereo, loopable where indicated
+
+[[theme]]
+id = "intro"
+file = "theme/intro.ogg"
+fallback = "theme/intro.wav"
+volume = 0.7
+category = "music"
+looping = false
+description = "Opening theme played at game start"
+
+[[theme]]
+id = "board_music"
+file = "theme/board_music.ogg"
+fallback = "theme/board_music.wav"
+volume = 0.5
+category = "music"
+looping = true
+loop_start_ms = 0
+loop_end_ms = 8000
+description = "Background music during board rounds"
+
+[[theme]]
+id = "tension"
+file = "theme/tension.ogg"
+fallback = "theme/tension.wav"
+volume = 0.25
+category = "music"
+looping = true
+loop_start_ms = 0
+loop_end_ms = 2000
+description = "Tension loop during spin"
+
+[[theme]]
+id = "question_theme"
+file = "theme/question_theme.ogg"
+fallback = "theme/question_theme.wav"
+volume = 0.4
+category = "music"
+looping = true
+description = "Background music during question rounds"
+
+[[theme]]
+id = "winner"
+file = "theme/winner.ogg"
+fallback = "theme/winner.wav"
+volume = 0.8
+category = "music"
+looping = false
+description = "Victory fanfare at game end"
+
+[[theme]]
+id = "closing"
+file = "theme/closing.ogg"
+fallback = "theme/closing.wav"
+volume = 0.6
+category = "music"
+looping = false
+description = "Closing credits theme"
+
+# ============================================================================
+# SOUND EFFECTS
+# ============================================================================
+# Game sound effects - mono, short duration
+
+[[effects]]
+id = "whammy"
+file = "effects/whammy.ogg"
+fallback = "effects/whammy.wav"
+volume = 0.8
+category = "effects"
+description = "Whammy foghorn sound"
+
+[[effects]]
+id = "cash_small"
+file = "effects/cash_small.ogg"
+fallback = "effects/cash_small.wav"
+volume = 0.7
+category = "effects"
+description = "Cash register for small wins"
+
+[[effects]]
+id = "cash_big"
+file = "effects/cash_big.ogg"
+fallback = "effects/cash_big.wav"
+volume = 0.75
+category = "effects"
+description = "Enhanced cash register for big wins (>$1000)"
+
+[[effects]]
+id = "prize"
+file = "effects/prize.ogg"
+fallback = "effects/prize.wav"
+volume = 0.7
+category = "effects"
+description = "Prize fanfare"
+
+[[effects]]
+id = "special"
+file = "effects/special.ogg"
+fallback = "effects/special.wav"
+volume = 0.7
+category = "effects"
+description = "Special square magical sweep"
+
+[[effects]]
+id = "correct"
+file = "effects/correct.ogg"
+fallback = "effects/correct.wav"
+volume = 0.6
+category = "effects"
+description = "Correct answer chime"
+
+[[effects]]
+id = "wrong"
+file = "effects/wrong.ogg"
+fallback = "effects/wrong.wav"
+volume = 0.6
+category = "effects"
+description = "Wrong answer buzzer"
+
+[[effects]]
+id = "sad_trombone"
+file = "effects/sad_trombone.ogg"
+fallback = "effects/sad_trombone.wav"
+volume = 0.7
+category = "effects"
+description = "Sad trombone for elimination"
+
+[[effects]]
+id = "spin_added"
+file = "effects/spin_added.ogg"
+fallback = "effects/spin_added.wav"
+volume = 0.5
+category = "effects"
+description = "Bell when spin is added"
+
+[[effects]]
+id = "buzz_in"
+file = "effects/buzz_in.ogg"
+fallback = "effects/buzz_in.wav"
+volume = 0.6
+category = "effects"
+description = "Buzz-in sound for questions"
+
+[[effects]]
+id = "board_stop"
+file = "effects/board_stop.ogg"
+fallback = "effects/board_stop.wav"
+volume = 0.7
+category = "effects"
+description = "Mechanical chunk when board stops"
+
+[[effects]]
+id = "click"
+file = "effects/click.ogg"
+fallback = "effects/click.wav"
+volume = 0.3
+category = "effects"
+description = "UI button click"
+
+[[effects]]
+id = "board_spin_ambient"
+file = "effects/board_spin_ambient.ogg"
+fallback = "effects/board_spin_ambient.wav"
+volume = 0.4
+category = "effects"
+looping = true
+loop_start_ms = 0
+loop_end_ms = 500
+description = "Ambient spin sound with motor hum"
+
+# ============================================================================
+# BOARD TONES
+# ============================================================================
+# Musical tones for each of the 18 board squares
+# Authentic sequence: D4, E4, G4, Bb4, D4, Ab4, F4, C4, Eb4, D4, B4, A4, C#4, E4, F#4, A4, D4, F4
+
+[[board_tones]]
+id = "tone_0"
+file = "board_tones/tone_d4_293.ogg"
+fallback = "board_tones/tone_d4_293.wav"
+volume = 0.6
+frequency_hz = 293.66
+note = "D4"
+category = "effects"
+
+[[board_tones]]
+id = "tone_1"
+file = "board_tones/tone_e4_329.ogg"
+fallback = "board_tones/tone_e4_329.wav"
+volume = 0.6
+frequency_hz = 329.63
+note = "E4"
+category = "effects"
+
+[[board_tones]]
+id = "tone_2"
+file = "board_tones/tone_g4_392.ogg"
+fallback = "board_tones/tone_g4_392.wav"
+volume = 0.6
+frequency_hz = 392.00
+note = "G4"
+category = "effects"
+
+[[board_tones]]
+id = "tone_3"
+file = "board_tones/tone_bb4_466.ogg"
+fallback = "board_tones/tone_bb4_466.wav"
+volume = 0.6
+frequency_hz = 466.16
+note = "Bb4"
+category = "effects"
+
+[[board_tones]]
+id = "tone_4"
+file = "board_tones/tone_d4_293_2.ogg"
+fallback = "board_tones/tone_d4_293_2.wav"
+volume = 0.6
+frequency_hz = 293.66
+note = "D4"
+category = "effects"
+
+[[board_tones]]
+id = "tone_5"
+file = "board_tones/tone_ab4_415.ogg"
+fallback = "board_tones/tone_ab4_415.wav"
+volume = 0.6
+frequency_hz = 415.30
+note = "Ab4"
+category = "effects"
+
+[[board_tones]]
+id = "tone_6"
+file = "board_tones/tone_f4_349.ogg"
+fallback = "board_tones/tone_f4_349.wav"
+volume = 0.6
+frequency_hz = 349.23
+note = "F4"
+category = "effects"
+
+[[board_tones]]
+id = "tone_7"
+file = "board_tones/tone_c4_261.ogg"
+fallback = "board_tones/tone_c4_261.wav"
+volume = 0.6
+frequency_hz = 261.63
+note = "C4"
+category = "effects"
+
+[[board_tones]]
+id = "tone_8"
+file = "board_tones/tone_eb4_311.ogg"
+fallback = "board_tones/tone_eb4_311.wav"
+volume = 0.6
+frequency_hz = 311.13
+note = "Eb4"
+category = "effects"
+
+[[board_tones]]
+id = "tone_9"
+file = "board_tones/tone_d4_293_3.ogg"
+fallback = "board_tones/tone_d4_293_3.wav"
+volume = 0.6
+frequency_hz = 293.66
+note = "D4"
+category = "effects"
+
+[[board_tones]]
+id = "tone_10"
+file = "board_tones/tone_b4_493.ogg"
+fallback = "board_tones/tone_b4_493.wav"
+volume = 0.6
+frequency_hz = 493.88
+note = "B4"
+category = "effects"
+
+[[board_tones]]
+id = "tone_11"
+file = "board_tones/tone_a4_440.ogg"
+fallback = "board_tones/tone_a4_440.wav"
+volume = 0.6
+frequency_hz = 440.00
+note = "A4"
+category = "effects"
+
+[[board_tones]]
+id = "tone_12"
+file = "board_tones/tone_cs4_277.ogg"
+fallback = "board_tones/tone_cs4_277.wav"
+volume = 0.6
+frequency_hz = 277.18
+note = "C#4"
+category = "effects"
+
+[[board_tones]]
+id = "tone_13"
+file = "board_tones/tone_e4_329_2.ogg"
+fallback = "board_tones/tone_e4_329_2.wav"
+volume = 0.6
+frequency_hz = 329.63
+note = "E4"
+category = "effects"
+
+[[board_tones]]
+id = "tone_14"
+file = "board_tones/tone_fs4_369.ogg"
+fallback = "board_tones/tone_fs4_369.wav"
+volume = 0.6
+frequency_hz = 369.99
+note = "F#4"
+category = "effects"
+
+[[board_tones]]
+id = "tone_15"
+file = "board_tones/tone_a4_440_2.ogg"
+fallback = "board_tones/tone_a4_440_2.wav"
+volume = 0.6
+frequency_hz = 440.00
+note = "A4"
+category = "effects"
+
+[[board_tones]]
+id = "tone_16"
+file = "board_tones/tone_d4_293_4.ogg"
+fallback = "board_tones/tone_d4_293_4.wav"
+volume = 0.6
+frequency_hz = 293.66
+note = "D4"
+category = "effects"
+
+[[board_tones]]
+id = "tone_17"
+file = "board_tones/tone_f4_349_2.ogg"
+fallback = "board_tones/tone_f4_349_2.wav"
+volume = 0.6
+frequency_hz = 349.23
+note = "F4"
+category = "effects"
+
+# ============================================================================
+# AUDIENCE REACTIONS
+# ============================================================================
+# Multiple variations for natural randomization
+
+[[audience]]
+id = "cheer_small"
+file = "audience/cheer_small.ogg"
+fallback = "audience/cheer_small.wav"
+volume = 0.35
+category = "audience"
+intensity = "low"
+description = "Small cheer for wins under $500"
+
+[[audience]]
+id = "cheer_medium"
+file = "audience/cheer_medium.ogg"
+fallback = "audience/cheer_medium.wav"
+volume = 0.4
+category = "audience"
+intensity = "medium"
+description = "Medium cheer for wins $500-$1000"
+
+[[audience]]
+id = "cheer_large"
+file = "audience/cheer_large.ogg"
+fallback = "audience/cheer_large.wav"
+volume = 0.5
+category = "audience"
+intensity = "high"
+description = "Large cheer for wins over $1000"
+
+[[audience]]
+id = "cheer_huge"
+file = "audience/cheer_huge.ogg"
+fallback = "audience/cheer_huge.wav"
+volume = 0.6
+category = "audience"
+intensity = "extreme"
+description = "Huge cheer for massive wins over $5000"
+
+[[audience]]
+id = "gasp_small"
+file = "audience/gasp_small.ogg"
+fallback = "audience/gasp_small.wav"
+volume = 0.3
+category = "audience"
+intensity = "low"
+description = "Small gasp for close calls"
+
+[[audience]]
+id = "gasp_large"
+file = "audience/gasp_large.ogg"
+fallback = "audience/gasp_large.wav"
+volume = 0.4
+category = "audience"
+intensity = "high"
+description = "Large gasp for Whammy hits"
+
+[[audience]]
+id = "gasp_elimination"
+file = "audience/gasp_elimination.ogg"
+fallback = "audience/gasp_elimination.wav"
+volume = 0.5
+category = "audience"
+intensity = "extreme"
+description = "Dramatic gasp for 4th Whammy elimination"
+
+[[audience]]
+id = "murmur"
+file = "audience/murmur.ogg"
+fallback = "audience/murmur.wav"
+volume = 0.15
+category = "audience"
+looping = true
+loop_start_ms = 500
+loop_end_ms = 4500
+description = "Ambient audience murmur (toggleable)"
+
+[[audience]]
+id = "applause"
+file = "audience/applause.ogg"
+fallback = "audience/applause.wav"
+volume = 0.45
+category = "audience"
+description = "General applause"
+
+[[audience]]
+id = "ooh_aah"
+file = "audience/ooh_aah.ogg"
+fallback = "audience/ooh_aah.wav"
+volume = 0.35
+category = "audience"
+description = "Impressed audience reaction"
+
+# Cheer variations for randomization
+[[audience]]
+id = "cheer_var_1"
+file = "audience/cheer_var_1.ogg"
+fallback = "audience/cheer_var_1.wav"
+volume = 0.4
+category = "audience"
+variation_of = "cheer_large"
+
+[[audience]]
+id = "cheer_var_2"
+file = "audience/cheer_var_2.ogg"
+fallback = "audience/cheer_var_2.wav"
+volume = 0.4
+category = "audience"
+variation_of = "cheer_large"
+
+[[audience]]
+id = "cheer_var_3"
+file = "audience/cheer_var_3.ogg"
+fallback = "audience/cheer_var_3.wav"
+volume = 0.4
+category = "audience"
+variation_of = "cheer_large"
+
+# Gasp variations for randomization
+[[audience]]
+id = "gasp_var_1"
+file = "audience/gasp_var_1.ogg"
+fallback = "audience/gasp_var_1.wav"
+volume = 0.35
+category = "audience"
+variation_of = "gasp_large"
+
+[[audience]]
+id = "gasp_var_2"
+file = "audience/gasp_var_2.ogg"
+fallback = "audience/gasp_var_2.wav"
+volume = 0.35
+category = "audience"
+variation_of = "gasp_large"
+
+# ============================================================================
+# WHAMMY AUDIO
+# ============================================================================
+# Catchphrase voice clips and animation-specific sounds
+
+[[whammy]]
+id = "catchphrase_hammer"
+file = "whammy/catchphrase_hammer.ogg"
+fallback = "whammy/catchphrase_hammer.wav"
+volume = 0.75
+category = "voice"
+animation_type = "Hammer"
+text = "Hee hee hee! WHAM!"
+
+[[whammy]]
+id = "catchphrase_pogo"
+file = "whammy/catchphrase_pogo.ogg"
+fallback = "whammy/catchphrase_pogo.wav"
+volume = 0.75
+category = "voice"
+animation_type = "Pogo"
+text = "Whoo! Whoo! Hee hee hee!"
+
+[[whammy]]
+id = "catchphrase_tnt"
+file = "whammy/catchphrase_tnt.ogg"
+fallback = "whammy/catchphrase_tnt.wav"
+volume = 0.75
+category = "voice"
+animation_type = "TNT"
+text = "This oughta do it! ...Oh no!"
+
+[[whammy]]
+id = "catchphrase_lawnmower"
+file = "whammy/catchphrase_lawnmower.ogg"
+fallback = "whammy/catchphrase_lawnmower.wav"
+volume = 0.75
+category = "voice"
+animation_type = "LawnMower"
+text = "Time to mow down your money!"
+
+[[whammy]]
+id = "catchphrase_fang"
+file = "whammy/catchphrase_fang.ogg"
+fallback = "whammy/catchphrase_fang.wav"
+volume = 0.75
+category = "voice"
+animation_type = "Fang"
+text = "Get 'em, Fang! GET 'EM!"
+
+[[whammy]]
+id = "catchphrase_dance"
+file = "whammy/catchphrase_dance.ogg"
+fallback = "whammy/catchphrase_dance.wav"
+volume = 0.75
+category = "voice"
+animation_type = "Dance"
+text = "Watch this! ...Get off the stage!"
+
+[[whammy]]
+id = "catchphrase_jumping"
+file = "whammy/catchphrase_jumping.ogg"
+fallback = "whammy/catchphrase_jumping.wav"
+volume = 0.75
+category = "voice"
+animation_type = "Jumping"
+text = "Boing! Boing! Hee hee hee!"
+
+[[whammy]]
+id = "catchphrase_rocketship"
+file = "whammy/catchphrase_rocketship.ogg"
+fallback = "whammy/catchphrase_rocketship.wav"
+volume = 0.75
+category = "voice"
+animation_type = "RocketShip"
+text = "3-2-1-Big Bucks! ...I thought I had the right stuff!"
+
+[[whammy]]
+id = "catchphrase_generic_1"
+file = "whammy/catchphrase_generic_1.ogg"
+fallback = "whammy/catchphrase_generic_1.wav"
+volume = 0.75
+category = "voice"
+description = "Generic whammy laugh 1"
+
+[[whammy]]
+id = "catchphrase_generic_2"
+file = "whammy/catchphrase_generic_2.ogg"
+fallback = "whammy/catchphrase_generic_2.wav"
+volume = 0.75
+category = "voice"
+description = "Generic whammy laugh 2"
+
+[[whammy]]
+id = "catchphrase_generic_3"
+file = "whammy/catchphrase_generic_3.ogg"
+fallback = "whammy/catchphrase_generic_3.wav"
+volume = 0.75
+category = "voice"
+description = "Generic whammy taunt"
+
+# Whammy-out special catchphrases
+[[whammy]]
+id = "catchphrase_grimreaper"
+file = "whammy/catchphrase_grimreaper.ogg"
+fallback = "whammy/catchphrase_grimreaper.wav"
+volume = 0.8
+category = "voice"
+animation_type = "GrimReaper"
+text = "Your time has come!"
+
+[[whammy]]
+id = "catchphrase_firingsquad"
+file = "whammy/catchphrase_firingsquad.ogg"
+fallback = "whammy/catchphrase_firingsquad.wav"
+volume = 0.8
+category = "voice"
+animation_type = "FiringSquad"
+text = "Ready! Aim! FIRE!"
+
+[[whammy]]
+id = "catchphrase_angelwhammy"
+file = "whammy/catchphrase_angelwhammy.ogg"
+fallback = "whammy/catchphrase_angelwhammy.wav"
+volume = 0.8
+category = "voice"
+animation_type = "AngelWhammy"
+text = "Going up!"
+
+# ============================================================================
+# AUDIO CONFIGURATION DEFAULTS
+# ============================================================================
+
+[config]
+master_volume = 1.0
+music_volume = 0.7
+effects_volume = 0.8
+voice_volume = 0.85
+audience_volume = 0.6
+use_authentic_sounds = true
+ambient_audience_enabled = false
+ducking_enabled = true
+ducking_ratio = 0.3

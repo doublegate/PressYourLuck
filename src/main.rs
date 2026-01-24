@@ -50,6 +50,7 @@ use ggez::{
     Context, ContextBuilder, GameResult,
 };
 
+mod animation;
 mod audio;
 mod game;
 mod gfx;
