@@ -1,0 +1,69 @@
+# ============================================================================
+# PRESS YOUR LUCK - Authentic 1983-1986 CBS Game Show Recreation
+# ============================================================================
+# A faithful recreation of the classic game show hosted by Peter Tomarken,
+# with Rod Roddy announcing and Whammy animations by Savage Steve Holland.
+#
+# Features:
+#   - Authentic 18-square Big Board with cycling prizes
+#   - 3-player format with question rounds and board rounds
+#   - 12+ unique Whammy animations with catchphrases
+#   - Authentic musical tones (D, E, G, B♭, D, A♭, F, C...)
+#   - Special squares: Add-A-One, Double Your Money, Pick a Corner
+#   - Proper passing rules and 4-Whammy elimination
+#   - Procedurally generated audio (no external files needed)
+#
+# Author: Claude (Anthropic) - Created for Luke Parobek
+# Date: January 2025
+# License: MIT
+# ============================================================================
+
+[package]
+name = "press-your-luck"
+version = "1.0.0"
+edition = "2021"
+authors = ["Luke Parobek <luke@example.com>"]
+description = "Authentic recreation of the 1983-1986 CBS game show Press Your Luck"
+license = "MIT"
+readme = "README.md"
+keywords = ["game", "gameshow", "press-your-luck", "whammy", "trivia"]
+categories = ["games"]
+rust-version = "1.70"
+
+[dependencies]
+# Macroquad - lightweight cross-platform game library
+# Features: 2D rendering, audio, input handling, UI
+macroquad = { version = "0.4", features = ["audio"] }
+
+# Random number generation for board patterns and trivia
+rand = "0.8"
+fastrand = "2.0"
+
+# Serialization for save/load functionality
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Async runtime for audio loading
+futures = "0.3"
+
+[profile.dev]
+# Optimize dependencies in dev for faster runtime
+opt-level = 1
+
+[profile.dev.package."*"]
+# Full optimization for dependencies
+opt-level = 3
+
+[profile.release]
+# Maximum optimization for release builds
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.release-debug]
+# Release with debug symbols for profiling
+inherits = "release"
+debug = true
+strip = false

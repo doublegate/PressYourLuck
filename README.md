@@ -1,0 +1,118 @@
+# Press Your Luck
+
+An authentic recreation of the 1983-1986 CBS game show hosted by Peter Tomarken,
+with Rod Roddy announcing and Whammy animations by Savage Steve Holland.
+
+## Features
+
+- **Authentic 18-square Big Board** with cycling prizes
+- **3-player format** with question rounds and board rounds
+- **12 unique Whammy animations** with classic catchphrases
+- **Authentic musical tones** (D, E, G, B♭, D, A♭, F, C...)
+- **Special squares**: Add-A-One, Double Your Money, Pick a Corner, $2000 or Lose Whammy
+- **Proper passing rules** and 4-Whammy elimination
+- **Procedurally generated audio** (no external files needed)
+
+## Building
+
+### Prerequisites
+
+- Rust 1.70 or later
+- On Linux: `libasound2-dev` (ALSA development libraries)
+
+```bash
+# Ubuntu/Debian
+sudo apt install libasound2-dev
+
+# Fedora
+sudo dnf install alsa-lib-devel
+
+# Arch/CachyOS
+sudo pacman -S alsa-lib
+```
+
+### Development Build
+
+```bash
+cargo build
+cargo run
+```
+
+### Release Build (Optimized)
+
+```bash
+cargo build --release
+./target/release/press-your-luck
+```
+
+## Controls
+
+| Key       | Action                                    |
+|-----------|-------------------------------------------|
+| SPACE     | Start/Stop spin, Continue                 |
+| P         | Pass spins to opponent                    |
+| B         | Buzz in during questions (3 spins)        |
+| 1-4       | Select answer or corner                   |
+| ENTER     | Confirm selection                         |
+| ESC       | Quit game                                 |
+
+## Game Rules
+
+### Question Round
+- 4 questions per round
+- **Buzz-in correct** = 3 spins (only one player gets them)
+- **Multiple choice correct** = 1 spin (all players get a chance)
+
+### Board Round
+- Use your spins on the Big Board
+- **Cash**: Add to your score
+- **Prize**: Win a physical prize (adds value to score)
+- **Special**: Trigger special actions like Add-A-One or Double Your Money
+- **WHAMMY**: Lose ALL your money and get a Whammy!
+
+### Passing Rules
+- You can pass **earned spins** (not passed spins) to opponents
+- Pass to the **leader**
+- If you're leading, pass to **2nd place**
+
+### Whammy Rules
+- Landing on a Whammy resets your score to $0
+- Passed spins convert to earned spins when you hit a Whammy
+- **4 Whammies = You're OUT!**
+
+## Project Structure
+
+```
+src/
+├── main.rs      # Entry point, input handling, game loop
+├── game/
+│   └── mod.rs   # Game state, rules, and logic
+├── audio/
+│   └── mod.rs   # Procedural sound synthesis
+├── graphics/
+│   └── mod.rs   # Rendering and animations
+└── ui/
+    └── mod.rs   # User interface overlays
+```
+
+## Technical Details
+
+- **Framework**: macroquad 0.4 (cross-platform 2D game library)
+- **Audio**: Procedurally generated WAV at 44.1kHz, 16-bit mono
+- **Graphics**: Vector-based rendering with animated effects
+- **Platform**: Linux (primary), Windows, macOS, WebAssembly
+
+## Historical Notes
+
+Press Your Luck aired on CBS from September 19, 1983 to September 26, 1986.
+The show became famous for the "Big Bucks" and "No Whammies!" catchphrases,
+and the Michael Larson incident where a contestant memorized the board patterns
+and won $110,237 in a single episode (1984).
+
+## License
+
+MIT License - See LICENSE file for details.
+
+---
+
+*"Big Bucks! No Whammies! STOP!"*
