@@ -88,23 +88,23 @@ cargo build --release
 
 ```
 src/
-├── main.rs      # Entry point, input handling, game loop
+├── main.rs      # Entry point, ggez EventHandler, game loop
 ├── game/
 │   └── mod.rs   # Game state, rules, and logic
 ├── audio/
-│   └── mod.rs   # Procedural sound synthesis
-├── graphics/
-│   └── mod.rs   # Rendering and animations
+│   └── mod.rs   # Procedural sound synthesis (ggez audio)
+├── gfx/
+│   └── mod.rs   # Rendering and animations (ggez graphics)
 └── ui/
     └── mod.rs   # User interface overlays
 ```
 
 ## Technical Details
 
-- **Framework**: macroquad 0.4 (cross-platform 2D game library)
+- **Framework**: ggez 0.9 (Rust game library inspired by LÖVE2D, uses wgpu/rodio)
 - **Audio**: Procedurally generated WAV at 44.1kHz, 16-bit mono
-- **Graphics**: Vector-based rendering with animated effects
-- **Platform**: Linux (primary), Windows, macOS, WebAssembly
+- **Graphics**: Vector-based rendering with Canvas/Mesh pattern
+- **Platform**: Linux (primary), Windows, macOS
 
 ## The Whammy Character
 

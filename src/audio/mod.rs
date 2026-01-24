@@ -24,12 +24,14 @@
 //! D4, E4, G4, Bb4, D4, Ab4, F4, C4, Eb4, D4, B4, A4, C#4, E4, F#4, A4, D4, F4
 //! ```
 
-use macroquad::audio::{Sound, PlaySoundParams, play_sound, load_sound_from_bytes};
+use ggez::audio::{SoundData, SoundSource, Source};
+use ggez::{Context, GameResult};
+
 use crate::game::AudioEvent;
 
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 // CONSTANTS
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 
 /// Audio sample rate (CD quality)
 const SAMPLE_RATE: u32 = 44100;
@@ -57,15 +59,15 @@ const BOARD_TONES: [f32; 18] = [
     349.23,  // F4  - Square 17
 ];
 
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 // AUDIO ENGINE
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 
 /// Main audio engine managing all game sounds
 ///
 /// # Architecture
 /// The engine pre-generates all sound effects on initialization,
-/// storing them as macroquad Sound objects for instant playback.
+/// storing them as ggez Source objects for instant playback.
 ///
 /// # Sound Categories
 /// 1. **Board Tones (18)**: One for each square position
@@ -73,103 +75,71 @@ const BOARD_TONES: [f32; 18] = [
 /// 3. **UI Sounds**: Button clicks, transitions
 pub struct AudioEngine {
     /// Pre-generated board tones (one per square)
-    board_tones: Vec<Option<Sound>>,
+    board_tones: Vec<Option<Source>>,
 
     /// Whammy foghorn sound
-    whammy_sound: Option<Sound>,
+    whammy_sound: Option<Source>,
 
     /// Cash register sound (small wins)
-    cash_sound: Option<Sound>,
+    cash_sound: Option<Source>,
 
     /// Big cash sound (large wins)
-    big_cash_sound: Option<Sound>,
+    big_cash_sound: Option<Source>,
 
     /// Prize fanfare
-    prize_sound: Option<Sound>,
+    prize_sound: Option<Source>,
 
     /// Special square magical sweep
-    special_sound: Option<Sound>,
+    special_sound: Option<Source>,
 
     /// Correct answer chime
-    correct_sound: Option<Sound>,
+    correct_sound: Option<Source>,
 
     /// Wrong answer buzzer
-    wrong_sound: Option<Sound>,
+    wrong_sound: Option<Source>,
 
     /// Sad trombone (elimination)
-    sad_trombone: Option<Sound>,
+    sad_trombone: Option<Source>,
 
     /// Spin added bell
-    spin_added_sound: Option<Sound>,
+    spin_added_sound: Option<Source>,
 
     /// Buzz-in sound
-    buzz_in_sound: Option<Sound>,
+    buzz_in_sound: Option<Source>,
 
     /// Winner fanfare
-    winner_sound: Option<Sound>,
+    winner_sound: Option<Source>,
 
     /// Button click
-    click_sound: Option<Sound>,
+    click_sound: Option<Source>,
 
     /// Board stop "chunk" sound (mechanical)
-    board_stop_sound: Option<Sound>,
+    board_stop_sound: Option<Source>,
 
     /// Audience cheer sound
-    audience_cheer_sound: Option<Sound>,
+    audience_cheer_sound: Option<Source>,
 
     /// Audience gasp sound
-    audience_gasp_sound: Option<Sound>,
+    audience_gasp_sound: Option<Source>,
 
     /// Tension music loop for spinning
-    tension_music: Option<Sound>,
+    tension_music: Option<Source>,
 
     /// Whether tension music is currently playing
     tension_playing: bool,
 
     /// Whether audio has been initialized
     initialized: bool,
-
-    /// Pending sounds to load (async)
-    pending_loads: Vec<PendingSound>,
-}
-
-/// Sound waiting to be loaded asynchronously
-struct PendingSound {
-    data: Vec<u8>,
-    target: SoundTarget,
-}
-
-/// Which sound slot to load into
-#[derive(Clone, Copy)]
-enum SoundTarget {
-    BoardTone(usize),
-    Whammy,
-    Cash,
-    BigCash,
-    Prize,
-    Special,
-    Correct,
-    Wrong,
-    SadTrombone,
-    SpinAdded,
-    BuzzIn,
-    Winner,
-    Click,
-    BoardStop,
-    AudienceCheer,
-    AudienceGasp,
-    TensionMusic,
 }
 
 impl AudioEngine {
     /// Create a new audio engine
     ///
     /// # Note
-    /// Sounds are generated and loaded asynchronously.
-    /// Call `update()` each frame to process pending loads.
-    pub fn new() -> Self {
+    /// Sounds are generated and loaded synchronously.
+    pub fn new(ctx: &mut Context) -> GameResult<Self> {
         let mut engine = Self {
-            board_tones: vec![None; 18],
+            board_tones: Vec::with_capacity(18),
             whammy_sound: None,
             cash_sound: None,
             big_cash_sound: None,
@@ -188,341 +158,230 @@ impl AudioEngine {
             tension_music: None,
             tension_playing: false,
             initialized: false,
-            pending_loads: Vec::new(),
         };
 
         // Generate all sounds
-        engine.generate_sounds();
+        engine.generate_sounds(ctx)?;
+        engine.initialized = true;
+        println!("Audio engine initialized with {} board tones", engine.board_tones.len());
 
-        engine
+        Ok(engine)
     }
 
     /// Generate all sound effects procedurally
-    fn generate_sounds(&mut self) {
+    fn generate_sounds(&mut self, ctx: &mut Context) -> GameResult {
+        // Helper to create a Source from WAV data
+        let make_source = |ctx: &mut Context, wav_data: Vec<u8>| -> Option<Source> {
+            let sound_data: SoundData = wav_data.into();
+            Source::from_data(ctx, sound_data).ok()
+        };
+
         // Generate board tones (18 unique frequencies)
-        for (i, &freq) in BOARD_TONES.iter().enumerate() {
+        for &freq in BOARD_TONES.iter() {
             let wav_data = generate_board_tone(freq);
-            self.pending_loads.push(PendingSound {
-                data: wav_data,
-                target: SoundTarget::BoardTone(i),
-            });
+            self.board_tones.push(make_source(ctx, wav_data));
         }
 
         // Generate game event sounds
-        self.pending_loads.push(PendingSound {
-            data: generate_whammy_sound(),
-            target: SoundTarget::Whammy,
-        });
+        self.whammy_sound = make_source(ctx, generate_whammy_sound());
+        self.cash_sound = make_source(ctx, generate_cash_sound(false));
+        self.big_cash_sound = make_source(ctx, generate_cash_sound(true));
+        self.prize_sound = make_source(ctx, generate_prize_sound());
+        self.special_sound = make_source(ctx, generate_special_sound());
+        self.correct_sound = make_source(ctx, generate_correct_sound());
+        self.wrong_sound = make_source(ctx, generate_wrong_sound());
+        self.sad_trombone = make_source(ctx, generate_sad_trombone());
+        self.spin_added_sound = make_source(ctx, generate_spin_added_sound());
+        self.buzz_in_sound = make_source(ctx, generate_buzz_in_sound());
+        self.winner_sound = make_source(ctx, generate_winner_fanfare());
+        self.click_sound = make_source(ctx, generate_click_sound());
+        self.board_stop_sound = make_source(ctx, generate_board_stop_sound());
+        self.audience_cheer_sound = make_source(ctx, generate_audience_cheer());
+        self.audience_gasp_sound = make_source(ctx, generate_audience_gasp());
 
-        self.pending_loads.push(PendingSound {
-            data: generate_cash_sound(false),
-            target: SoundTarget::Cash,
-        });
+        // Tension music with repeat
+        if let Some(mut source) = make_source(ctx, generate_tension_music()) {
+            source.set_repeat(true);
+            self.tension_music = Some(source);
+        }
 
-        self.pending_loads.push(PendingSound {
-            data: generate_cash_sound(true),
-            target: SoundTarget::BigCash,
-        });
-
-        self.pending_loads.push(PendingSound {
-            data: generate_prize_sound(),
-            target: SoundTarget::Prize,
-        });
-
-        self.pending_loads.push(PendingSound {
-            data: generate_special_sound(),
-            target: SoundTarget::Special,
-        });
-
-        self.pending_loads.push(PendingSound {
-            data: generate_correct_sound(),
-            target: SoundTarget::Correct,
-        });
-
-        self.pending_loads.push(PendingSound {
-            data: generate_wrong_sound(),
-            target: SoundTarget::Wrong,
-        });
-
-        self.pending_loads.push(PendingSound {
-            data: generate_sad_trombone(),
-            target: SoundTarget::SadTrombone,
-        });
-
-        self.pending_loads.push(PendingSound {
-            data: generate_spin_added_sound(),
-            target: SoundTarget::SpinAdded,
-        });
-
-        self.pending_loads.push(PendingSound {
-            data: generate_buzz_in_sound(),
-            target: SoundTarget::BuzzIn,
-        });
-
-        self.pending_loads.push(PendingSound {
-            data: generate_winner_fanfare(),
-            target: SoundTarget::Winner,
-        });
-
-        self.pending_loads.push(PendingSound {
-            data: generate_click_sound(),
-            target: SoundTarget::Click,
-        });
-
-        self.pending_loads.push(PendingSound {
-            data: generate_board_stop_sound(),
-            target: SoundTarget::BoardStop,
-        });
-
-        self.pending_loads.push(PendingSound {
-            data: generate_audience_cheer(),
-            target: SoundTarget::AudienceCheer,
-        });
-
-        self.pending_loads.push(PendingSound {
-            data: generate_audience_gasp(),
-            target: SoundTarget::AudienceGasp,
-        });
-
-        self.pending_loads.push(PendingSound {
-            data: generate_tension_music(),
-            target: SoundTarget::TensionMusic,
-        });
+        Ok(())
     }
 
-    /// Update the audio engine (process pending sound loads)
+    /// Update the audio engine
     ///
     /// # Arguments
+    /// * `_ctx` - ggez context
     /// * `_delta_time` - Frame delta time (unused, for future features)
-    pub fn update(&mut self, _delta_time: f32) {
-        // Process pending sound loads (one per frame to avoid blocking)
-        if let Some(pending) = self.pending_loads.pop() {
-            // Load sound asynchronously
-            if let Ok(sound) = futures::executor::block_on(
-                load_sound_from_bytes(&pending.data)
-            ) {
-                match pending.target {
-                    SoundTarget::BoardTone(i) => self.board_tones[i] = Some(sound),
-                    SoundTarget::Whammy => self.whammy_sound = Some(sound),
-                    SoundTarget::Cash => self.cash_sound = Some(sound),
-                    SoundTarget::BigCash => self.big_cash_sound = Some(sound),
-                    SoundTarget::Prize => self.prize_sound = Some(sound),
-                    SoundTarget::Special => self.special_sound = Some(sound),
-                    SoundTarget::Correct => self.correct_sound = Some(sound),
-                    SoundTarget::Wrong => self.wrong_sound = Some(sound),
-                    SoundTarget::SadTrombone => self.sad_trombone = Some(sound),
-                    SoundTarget::SpinAdded => self.spin_added_sound = Some(sound),
-                    SoundTarget::BuzzIn => self.buzz_in_sound = Some(sound),
-                    SoundTarget::Winner => self.winner_sound = Some(sound),
-                    SoundTarget::Click => self.click_sound = Some(sound),
-                    SoundTarget::BoardStop => self.board_stop_sound = Some(sound),
-                    SoundTarget::AudienceCheer => self.audience_cheer_sound = Some(sound),
-                    SoundTarget::AudienceGasp => self.audience_gasp_sound = Some(sound),
-                    SoundTarget::TensionMusic => self.tension_music = Some(sound),
-                }
-            }
-        } else if !self.initialized {
-            self.initialized = true;
-            println!("Audio engine initialized with {} board tones", self.board_tones.len());
-        }
+    pub fn update(&mut self, _ctx: &mut Context, _delta_time: f32) -> GameResult {
+        Ok(())
     }
 
     /// Handle an audio event from the game
     ///
     /// # Arguments
+    /// * `ctx` - ggez context for audio playback
     /// * `event` - The audio event to process
-    pub fn handle_event(&mut self, event: AudioEvent) {
+    pub fn handle_event(&mut self, ctx: &Context, event: AudioEvent) {
         match event {
-            AudioEvent::BoardTone(index) => self.play_board_tone(index),
-            AudioEvent::WhammySound => self.play_whammy(),
-            AudioEvent::CashSound { big } => self.play_cash(big),
-            AudioEvent::PrizeSound => self.play_prize(),
-            AudioEvent::SpecialSound => self.play_special(),
-            AudioEvent::CorrectSound => self.play_correct(),
-            AudioEvent::WrongSound => self.play_wrong(),
-            AudioEvent::SadTrombone => self.play_sad_trombone(),
-            AudioEvent::SpinAddedBell => self.play_spin_added(),
-            AudioEvent::BuzzInSound => self.play_buzz_in(),
-            AudioEvent::WinnerFanfare => self.play_winner(),
-            AudioEvent::BoardStopSound => self.play_board_stop(),
-            AudioEvent::AudienceCheer => self.play_audience_cheer(),
-            AudioEvent::AudienceGasp => self.play_audience_gasp(),
-            AudioEvent::StartTensionMusic => self.start_tension_music(),
-            AudioEvent::StopTensionMusic => self.stop_tension_music(),
+            AudioEvent::BoardTone(index) => self.play_board_tone(ctx, index),
+            AudioEvent::WhammySound => self.play_whammy(ctx),
+            AudioEvent::CashSound { big } => self.play_cash(ctx, big),
+            AudioEvent::PrizeSound => self.play_prize(ctx),
+            AudioEvent::SpecialSound => self.play_special(ctx),
+            AudioEvent::CorrectSound => self.play_correct(ctx),
+            AudioEvent::WrongSound => self.play_wrong(ctx),
+            AudioEvent::SadTrombone => self.play_sad_trombone(ctx),
+            AudioEvent::SpinAddedBell => self.play_spin_added(ctx),
+            AudioEvent::BuzzInSound => self.play_buzz_in(ctx),
+            AudioEvent::WinnerFanfare => self.play_winner(ctx),
+            AudioEvent::BoardStopSound => self.play_board_stop(ctx),
+            AudioEvent::AudienceCheer => self.play_audience_cheer(ctx),
+            AudioEvent::AudienceGasp => self.play_audience_gasp(ctx),
+            AudioEvent::StartTensionMusic => self.start_tension_music(ctx),
+            AudioEvent::StopTensionMusic => self.stop_tension_music(ctx),
         }
     }
 
     /// Play a board tone for the given square index
-    fn play_board_tone(&self, index: usize) {
+    fn play_board_tone(&mut self, ctx: &Context, index: usize) {
         if index < self.board_tones.len() {
-            if let Some(sound) = &self.board_tones[index] {
-                play_sound(sound, PlaySoundParams {
-                    looped: false,
-                    volume: 0.6,
-                });
+            if let Some(sound) = &mut self.board_tones[index] {
+                sound.set_volume(0.6);
+                let _ = sound.play_detached(ctx);
             }
         }
     }
 
     /// Play the Whammy foghorn sound
-    fn play_whammy(&self) {
-        if let Some(sound) = &self.whammy_sound {
-            play_sound(sound, PlaySoundParams {
-                looped: false,
-                volume: 0.8,
-            });
+    fn play_whammy(&mut self, ctx: &Context) {
+        if let Some(sound) = &mut self.whammy_sound {
+            sound.set_volume(0.8);
+            let _ = sound.play_detached(ctx);
         }
     }
 
     /// Play cash register sound
-    fn play_cash(&self, big: bool) {
-        let sound = if big { &self.big_cash_sound } else { &self.cash_sound };
+    fn play_cash(&mut self, ctx: &Context, big: bool) {
+        let sound = if big { &mut self.big_cash_sound } else { &mut self.cash_sound };
         if let Some(s) = sound {
-            play_sound(s, PlaySoundParams {
-                looped: false,
-                volume: 0.7,
-            });
+            s.set_volume(0.7);
+            let _ = s.play_detached(ctx);
         }
     }
 
     /// Play prize fanfare
-    fn play_prize(&self) {
-        if let Some(sound) = &self.prize_sound {
-            play_sound(sound, PlaySoundParams {
-                looped: false,
-                volume: 0.7,
-            });
+    fn play_prize(&mut self, ctx: &Context) {
+        if let Some(sound) = &mut self.prize_sound {
+            sound.set_volume(0.7);
+            let _ = sound.play_detached(ctx);
         }
     }
 
     /// Play special square sound
-    fn play_special(&self) {
-        if let Some(sound) = &self.special_sound {
-            play_sound(sound, PlaySoundParams {
-                looped: false,
-                volume: 0.7,
-            });
+    fn play_special(&mut self, ctx: &Context) {
+        if let Some(sound) = &mut self.special_sound {
+            sound.set_volume(0.7);
+            let _ = sound.play_detached(ctx);
         }
     }
 
     /// Play correct answer chime
-    fn play_correct(&self) {
-        if let Some(sound) = &self.correct_sound {
-            play_sound(sound, PlaySoundParams {
-                looped: false,
-                volume: 0.6,
-            });
+    fn play_correct(&mut self, ctx: &Context) {
+        if let Some(sound) = &mut self.correct_sound {
+            sound.set_volume(0.6);
+            let _ = sound.play_detached(ctx);
         }
     }
 
     /// Play wrong answer buzzer
-    fn play_wrong(&self) {
-        if let Some(sound) = &self.wrong_sound {
-            play_sound(sound, PlaySoundParams {
-                looped: false,
-                volume: 0.6,
-            });
+    fn play_wrong(&mut self, ctx: &Context) {
+        if let Some(sound) = &mut self.wrong_sound {
+            sound.set_volume(0.6);
+            let _ = sound.play_detached(ctx);
         }
     }
 
     /// Play sad trombone for elimination
-    fn play_sad_trombone(&self) {
-        if let Some(sound) = &self.sad_trombone {
-            play_sound(sound, PlaySoundParams {
-                looped: false,
-                volume: 0.7,
-            });
+    fn play_sad_trombone(&mut self, ctx: &Context) {
+        if let Some(sound) = &mut self.sad_trombone {
+            sound.set_volume(0.7);
+            let _ = sound.play_detached(ctx);
         }
     }
 
     /// Play spin added bell
-    fn play_spin_added(&self) {
-        if let Some(sound) = &self.spin_added_sound {
-            play_sound(sound, PlaySoundParams {
-                looped: false,
-                volume: 0.5,
-            });
+    fn play_spin_added(&mut self, ctx: &Context) {
+        if let Some(sound) = &mut self.spin_added_sound {
+            sound.set_volume(0.5);
+            let _ = sound.play_detached(ctx);
         }
     }
 
     /// Play buzz-in sound
-    fn play_buzz_in(&self) {
-        if let Some(sound) = &self.buzz_in_sound {
-            play_sound(sound, PlaySoundParams {
-                looped: false,
-                volume: 0.6,
-            });
+    fn play_buzz_in(&mut self, ctx: &Context) {
+        if let Some(sound) = &mut self.buzz_in_sound {
+            sound.set_volume(0.6);
+            let _ = sound.play_detached(ctx);
         }
     }
 
     /// Play winner fanfare
-    fn play_winner(&self) {
-        if let Some(sound) = &self.winner_sound {
-            play_sound(sound, PlaySoundParams {
-                looped: false,
-                volume: 0.8,
-            });
+    fn play_winner(&mut self, ctx: &Context) {
+        if let Some(sound) = &mut self.winner_sound {
+            sound.set_volume(0.8);
+            let _ = sound.play_detached(ctx);
         }
     }
 
     /// Play button click sound
-    pub fn play_button_click(&self) {
-        if let Some(sound) = &self.click_sound {
-            play_sound(sound, PlaySoundParams {
-                looped: false,
-                volume: 0.3,
-            });
+    pub fn play_button_click(&mut self, ctx: &Context) {
+        if let Some(sound) = &mut self.click_sound {
+            sound.set_volume(0.3);
+            let _ = sound.play_detached(ctx);
         }
     }
 
     /// Play board stop mechanical "chunk" sound
-    fn play_board_stop(&self) {
-        if let Some(sound) = &self.board_stop_sound {
-            play_sound(sound, PlaySoundParams {
-                looped: false,
-                volume: 0.7,
-            });
+    fn play_board_stop(&mut self, ctx: &Context) {
+        if let Some(sound) = &mut self.board_stop_sound {
+            sound.set_volume(0.7);
+            let _ = sound.play_detached(ctx);
         }
     }
 
     /// Play audience cheer sound
-    fn play_audience_cheer(&self) {
-        if let Some(sound) = &self.audience_cheer_sound {
-            play_sound(sound, PlaySoundParams {
-                looped: false,
-                volume: 0.4,
-            });
+    fn play_audience_cheer(&mut self, ctx: &Context) {
+        if let Some(sound) = &mut self.audience_cheer_sound {
+            sound.set_volume(0.4);
+            let _ = sound.play_detached(ctx);
         }
     }
 
     /// Play audience gasp sound
-    fn play_audience_gasp(&self) {
-        if let Some(sound) = &self.audience_gasp_sound {
-            play_sound(sound, PlaySoundParams {
-                looped: false,
-                volume: 0.35,
-            });
+    fn play_audience_gasp(&mut self, ctx: &Context) {
+        if let Some(sound) = &mut self.audience_gasp_sound {
+            sound.set_volume(0.35);
+            let _ = sound.play_detached(ctx);
         }
     }
 
     /// Start playing tension music loop (for spinning)
-    pub fn start_tension_music(&mut self) {
+    pub fn start_tension_music(&mut self, ctx: &Context) {
         if !self.tension_playing {
-            if let Some(sound) = &self.tension_music {
-                play_sound(sound, PlaySoundParams {
-                    looped: true,
-                    volume: 0.25,  // Background level
-                });
+            if let Some(sound) = &mut self.tension_music {
+                sound.set_volume(0.25);
+                let _ = sound.play_detached(ctx);
                 self.tension_playing = true;
             }
         }
     }
 
     /// Stop playing tension music
-    pub fn stop_tension_music(&mut self) {
+    pub fn stop_tension_music(&mut self, ctx: &Context) {
         if self.tension_playing {
-            if let Some(sound) = &self.tension_music {
-                macroquad::audio::stop_sound(sound);
+            if let Some(sound) = &mut self.tension_music {
+                let _ = sound.stop(ctx);
             }
             self.tension_playing = false;
         }
@@ -531,13 +390,33 @@ impl AudioEngine {
 
 impl Default for AudioEngine {
     fn default() -> Self {
-        Self::new()
+        Self {
+            board_tones: Vec::new(),
+            whammy_sound: None,
+            cash_sound: None,
+            big_cash_sound: None,
+            prize_sound: None,
+            special_sound: None,
+            correct_sound: None,
+            wrong_sound: None,
+            sad_trombone: None,
+            spin_added_sound: None,
+            buzz_in_sound: None,
+            winner_sound: None,
+            click_sound: None,
+            board_stop_sound: None,
+            audience_cheer_sound: None,
+            audience_gasp_sound: None,
+            tension_music: None,
+            tension_playing: false,
+            initialized: false,
+        }
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 // WAV FILE GENERATION
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 
 /// Create a WAV file header
 ///
@@ -595,9 +474,9 @@ fn samples_to_wav(samples: &[f32]) -> Vec<u8> {
     wav
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 // SOUND GENERATION FUNCTIONS
-// ═══════════════════════════════════════════════════════════════════════════════
+// ===============================================================================
 
 /// Generate a board tone with attack/decay envelope
 ///
@@ -1286,7 +1165,7 @@ fn generate_tension_music() -> Vec<u8> {
     for i in 0..num_samples {
         let t = i as f32 / SAMPLE_RATE as f32;
 
-        // ─── DRIVING BASS PULSE (D minor foundation) ───
+        // --- DRIVING BASS PULSE (D minor foundation) ---
         // D2 = 73.42 Hz, pulsing on quarter notes
         let beat_phase = (t / beat_duration) % 1.0;
         let bass_envelope = if beat_phase < 0.3 {
@@ -1300,7 +1179,7 @@ fn generate_tension_music() -> Vec<u8> {
         // Octave bass for fullness (D3)
         let bass_oct = bass_envelope * 0.15 * (2.0 * std::f32::consts::PI * bass_freq * 2.0 * t).sin();
 
-        // ─── SYNTH PAD (Suspenseful chord) ───
+        // --- SYNTH PAD (Suspenseful chord) ---
         // Dm chord: D4 (293.66), F4 (349.23), A4 (440.00)
         let pad_volume = 0.12;
         let d4 = (2.0 * std::f32::consts::PI * 293.66 * t).sin();
@@ -1314,7 +1193,7 @@ fn generate_tension_music() -> Vec<u8> {
         let lfo = 0.5 + 0.5 * (2.0 * std::f32::consts::PI * 0.5 * t).sin();
         let pad_modulated = pad * (0.7 + 0.3 * lfo);
 
-        // ─── RHYTHMIC HIGH HAT (Eighth notes) ───
+        // --- RHYTHMIC HIGH HAT (Eighth notes) ---
         let eighth_phase = (t / (beat_duration / 2.0)) % 1.0;
         let hat_envelope = if eighth_phase < 0.05 {
             1.0 - eighth_phase / 0.05
@@ -1325,13 +1204,13 @@ fn generate_tension_music() -> Vec<u8> {
         let hat_noise = fastrand::f32() - 0.5;
         let hat = hat_envelope * 0.08 * hat_noise;
 
-        // ─── TENSION RISER (Rising tone) ───
+        // --- TENSION RISER (Rising tone) ---
         // Subtle rising sweep throughout the loop
         let sweep_freq = 200.0 + 300.0 * (t / duration);
         let sweep = 0.04 * (2.0 * std::f32::consts::PI * sweep_freq * t).sin()
             * (0.5 + 0.5 * (t / duration));
 
-        // ─── SYNTH STAB (On beat 2 and 4) ───
+        // --- SYNTH STAB (On beat 2 and 4) ---
         let bar_phase = (t / (beat_duration * 4.0)) % 1.0;
         let stab_envelope = if (bar_phase > 0.24 && bar_phase < 0.27)
             || (bar_phase > 0.74 && bar_phase < 0.77) {

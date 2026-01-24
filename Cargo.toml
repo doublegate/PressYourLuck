@@ -7,7 +7,7 @@
 # Features:
 #   - Authentic 18-square Big Board with cycling prizes
 #   - 3-player format with question rounds and board rounds
-#   - 12+ unique Whammy animations with catchphrases
+#   - 66+ unique Whammy animations with authentic character design
 #   - Authentic musical tones (D, E, G, B♭, D, A♭, F, C...)
 #   - Special squares: Add-A-One, Double Your Money, Pick a Corner
 #   - Proper passing rules and 4-Whammy elimination
@@ -20,7 +20,7 @@
 
 [package]
 name = "press-your-luck"
-version = "1.0.0"
+version = "2.0.0"
 edition = "2021"
 authors = ["Luke Parobek <luke@example.com>"]
 description = "Authentic recreation of the 1983-1986 CBS game show Press Your Luck"
@@ -31,9 +31,10 @@ categories = ["games"]
 rust-version = "1.70"
 
 [dependencies]
-# Macroquad - lightweight cross-platform game library
-# Features: 2D rendering, audio, input handling, UI
-macroquad = { version = "0.4", features = ["audio"] }
+# ggez - Rust game library inspired by LOVE2D
+# Features: 2D rendering (wgpu), audio (rodio), input handling
+# Security: No known vulnerabilities (replaces macroquad 0.4 with RUSTSEC-2025-0035)
+ggez = "0.9"
 
 # Random number generation for board patterns and trivia
 rand = "0.8"
@@ -42,9 +43,6 @@ fastrand = "2.0"
 # Serialization for save/load functionality
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-
-# Async runtime for audio loading
-futures = "0.3"
 
 [profile.dev]
 # Optimize dependencies in dev for faster runtime

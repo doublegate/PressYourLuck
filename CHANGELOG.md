@@ -5,6 +5,30 @@ All notable changes to Press Your Luck will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2025-01-24
+
+### Changed
+
+#### Framework Migration: macroquad → ggez
+- **BREAKING**: Migrated entire codebase from macroquad 0.4 to ggez 0.9
+- Resolves RUSTSEC-2025-0035 security vulnerability (macroquad soundness issues)
+- ggez provides better long-term sustainability with wgpu backend and rodio audio
+
+#### Architecture Changes
+- Renamed `graphics/` module to `gfx/` to avoid namespace collision with `ggez::graphics`
+- Implemented ggez `EventHandler` trait pattern for game loop
+- Updated audio system to use ggez audio API with Context passing
+- Converted rendering to ggez Canvas/Mesh pattern
+
+### Removed
+- WebAssembly target support (ggez does not support WASM)
+- macroquad and futures dependencies
+
+### Security
+- Eliminated RUSTSEC-2025-0035 vulnerability by removing macroquad dependency
+
+---
+
 ## [1.1.0] - 2025-01-24
 
 ### Added
@@ -98,8 +122,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| 2.0.0 | 2025-01-24 | Framework migration to ggez 0.9, security fix |
 | 1.1.0 | 2025-01-24 | Authentic Whammy redesign, 66+ animations, holiday specials |
 | 1.0.0 | 2025-01-24 | Initial release with full game implementation |
 
+[2.0.0]: https://github.com/doublegate/PressYourLuck/releases/tag/v2.0.0
 [1.1.0]: https://github.com/doublegate/PressYourLuck/releases/tag/v1.1.0
 [1.0.0]: https://github.com/doublegate/PressYourLuck/releases/tag/v1.0.0
