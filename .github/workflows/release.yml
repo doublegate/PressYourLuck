@@ -69,9 +69,74 @@ jobs:
             ${{ matrix.artifact }}.tar.gz
             ${{ matrix.artifact }}.zip
 
+  build-appimage:
+    name: Build AppImage
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libudev-dev libfuse2
+          # Download linuxdeploy
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage
+
+      - name: Build release binary
+        run: cargo build --release
+
+      - name: Create AppDir structure
+        run: |
+          mkdir -p AppDir/usr/bin
+          mkdir -p AppDir/usr/share/applications
+          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+
+          # Copy binary
+          cp target/release/press-your-luck AppDir/usr/bin/
+
+          # Create desktop entry
+          cat > AppDir/usr/share/applications/press-your-luck.desktop << 'EOF'
+          [Desktop Entry]
+          Type=Application
+          Name=Press Your Luck
+          Comment=Authentic recreation of the 1983-1986 CBS game show
+          Exec=press-your-luck
+          Icon=press-your-luck
+          Categories=Game;
+          Terminal=false
+          EOF
+
+          # Create a simple icon (SVG converted to PNG would be better, but this works)
+          # Using a placeholder - in production you'd want a real icon
+          convert -size 256x256 xc:'#1a1a2e' -fill '#ffd700' -gravity center \
+            -pointsize 48 -annotate 0 'PYL' AppDir/usr/share/icons/hicolor/256x256/apps/press-your-luck.png || \
+          # Fallback: create minimal PNG if imagemagick not available
+          echo 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' | base64 -d > AppDir/usr/share/icons/hicolor/256x256/apps/press-your-luck.png
+
+      - name: Build AppImage
+        run: |
+          ./linuxdeploy-x86_64.AppImage --appimage-extract-and-run \
+            --appdir AppDir \
+            --desktop-file AppDir/usr/share/applications/press-your-luck.desktop \
+            --output appimage
+
+          # Rename to include version
+          mv Press_Your_Luck*.AppImage press-your-luck-x86_64.AppImage || \
+          mv *.AppImage press-your-luck-x86_64.AppImage
+
+      - name: Upload AppImage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: press-your-luck-appimage
+          path: press-your-luck-x86_64.AppImage
+
   create-release:
     name: Create Release
-    needs: build-release
+    needs: [build-release, build-appimage]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -92,3 +157,4 @@ jobs:
           files: |
             artifacts/**/*.tar.gz
             artifacts/**/*.zip
+            artifacts/**/*.AppImage
