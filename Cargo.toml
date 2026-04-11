@@ -38,7 +38,7 @@ ggez = "0.9"
 
 # Random number generation for board patterns and trivia
 rand = "0.9"
-fastrand = "2.0"
+fastrand = "2.4"
 
 # Serialization for save/load functionality
 serde = { version = "1.0", features = ["derive"] }
