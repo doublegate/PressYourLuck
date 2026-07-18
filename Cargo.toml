@@ -34,7 +34,7 @@ rust-version = "1.70"
 # ggez - Rust game library inspired by LOVE2D
 # Features: 2D rendering (wgpu), audio (rodio), input handling
 # Security: No known vulnerabilities (replaces macroquad 0.4 with RUSTSEC-2025-0035)
-ggez = "0.9"
+ggez = "0.10"
 
 # Random number generation for board patterns and trivia
 rand = "0.9"
