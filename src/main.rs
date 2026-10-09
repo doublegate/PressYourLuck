@@ -61,8 +61,8 @@ use animation::{
     Animation, AnimationBuilder, AnimationEvent, AnimationFrame, AnimationPlayer, AnimationState,
     AtlasManager, AtlasMetadata, FlashMode, FrameInfo, LoopMode, Particle, ParticleEmitter,
     ParticleSystem, ParticleType, PlaybackState, ScreenEffects, ScreenFlash, ScreenShake,
-    SpriteAtlas, WhammyAnimationId, WhammyAnimator, WhammyState,
-    WHAMMY_HIGHLIGHT, WHAMMY_OUTLINE, WHAMMY_RED, WHAMMY_SHADOW,
+    SpriteAtlas, WhammyAnimationId, WhammyAnimator, WhammyState, WHAMMY_HIGHLIGHT, WHAMMY_OUTLINE,
+    WHAMMY_RED, WHAMMY_SHADOW,
 };
 use audio::{AudioEngine, ExtendedAudioEvent, ReactionIntensity};
 use game::{GamePhase, GameState, InputAction, WhammyAnimationType};
