@@ -34,4 +34,5 @@ pub use effects::{FlashMode, ScreenEffects, ScreenFlash, ScreenShake};
 pub use particles::{Particle, ParticleEmitter, ParticleSystem, ParticleType};
 pub use player::{AnimationEvent, AnimationPlayer, AnimationState, PlaybackState};
 pub use types::{Animation, AnimationBuilder, AnimationFrame, LoopMode};
+#[allow(unused_imports)]
 pub use whammy::{WhammyAnimationId, WhammyAnimationLibrary, WhammyAnimator, WhammyState};

@@ -497,6 +497,7 @@ impl AtlasManager {
     }
 
     /// Get all atlas IDs
+    #[allow(dead_code)]
     pub fn ids(&self) -> Vec<&str> {
         self.atlases.keys().map(|s| s.as_str()).collect()
     }

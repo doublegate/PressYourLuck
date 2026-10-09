@@ -61,7 +61,7 @@ use animation::{
     Animation, AnimationBuilder, AnimationEvent, AnimationFrame, AnimationPlayer, AnimationState,
     AtlasManager, AtlasMetadata, FlashMode, FrameInfo, LoopMode, Particle, ParticleEmitter,
     ParticleSystem, ParticleType, PlaybackState, ScreenEffects, ScreenFlash, ScreenShake,
-    SpriteAtlas, WhammyAnimationId, WhammyAnimationLibrary, WhammyAnimator, WhammyState,
+    SpriteAtlas, WhammyAnimationId, WhammyAnimator, WhammyState,
     WHAMMY_HIGHLIGHT, WHAMMY_OUTLINE, WHAMMY_RED, WHAMMY_SHADOW,
 };
 use audio::{AudioEngine, ExtendedAudioEvent, ReactionIntensity};
@@ -754,7 +754,7 @@ impl EventHandler for PressYourLuck {
             let _atlas_type = std::any::type_name::<SpriteAtlas>();
 
             // Verify animation library type
-            let _lib_type = std::any::type_name::<WhammyAnimationLibrary>();
+            let _lib_type = std::any::type_name::<animation::WhammyAnimationLibrary>();
 
             // Verify WhammyState type - use value to avoid warning
             let _whammy_state = self.get_whammy_state();
