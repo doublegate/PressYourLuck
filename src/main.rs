@@ -47,6 +47,7 @@ use ggez::{
     event::{self, EventHandler},
     graphics::Color,
     input::keyboard::{KeyCode, KeyInput},
+    winit::keyboard::PhysicalKey,
     Context, ContextBuilder, GameResult,
 };
 
@@ -60,8 +61,8 @@ use animation::{
     Animation, AnimationBuilder, AnimationEvent, AnimationFrame, AnimationPlayer, AnimationState,
     AtlasManager, AtlasMetadata, FlashMode, FrameInfo, LoopMode, Particle, ParticleEmitter,
     ParticleSystem, ParticleType, PlaybackState, ScreenEffects, ScreenFlash, ScreenShake,
-    SpriteAtlas, WhammyAnimationId, WhammyAnimationLibrary, WhammyAnimator, WhammyState,
-    WHAMMY_HIGHLIGHT, WHAMMY_OUTLINE, WHAMMY_RED, WHAMMY_SHADOW,
+    SpriteAtlas, WhammyAnimationId, WhammyAnimator, WhammyState, WHAMMY_HIGHLIGHT, WHAMMY_OUTLINE,
+    WHAMMY_RED, WHAMMY_SHADOW,
 };
 use audio::{AudioEngine, ExtendedAudioEvent, ReactionIntensity};
 use game::{GamePhase, GameState, InputAction, WhammyAnimationType};
@@ -159,19 +160,13 @@ impl PressYourLuck {
             }
             "impact" => {
                 // Quick flash for impacts
-                self.screen_effects.flash_with_mode(
-                    Color::WHITE,
-                    0.1,
-                    FlashMode::Flash,
-                );
+                self.screen_effects
+                    .flash_with_mode(Color::WHITE, 0.1, FlashMode::Flash);
             }
             _ => {
                 // Default fade out
-                self.screen_effects.flash_with_mode(
-                    Color::WHITE,
-                    0.3,
-                    FlashMode::FadeOut,
-                );
+                self.screen_effects
+                    .flash_with_mode(Color::WHITE, 0.3, FlashMode::FadeOut);
             }
         }
     }
@@ -202,11 +197,7 @@ impl PressYourLuck {
     /// Create a custom particle for manual spawning
     fn create_custom_particle(&self, x: f32, y: f32) -> animation::Particle {
         use ggez::mint::Vector2;
-        animation::Particle::new(
-            Vector2 { x, y },
-            Vector2 { x: 0.0, y: -100.0 },
-            1.5,
-        )
+        animation::Particle::new(Vector2 { x, y }, Vector2 { x: 0.0, y: -100.0 }, 1.5)
     }
 
     /// Check if atlas manager contains a specific atlas
@@ -226,7 +217,13 @@ impl PressYourLuck {
     }
 
     /// Create atlas metadata for a grid-based sprite sheet
-    fn create_atlas_metadata(id: &str, width: u32, height: u32, cols: u32, rows: u32) -> AtlasMetadata {
+    fn create_atlas_metadata(
+        id: &str,
+        width: u32,
+        height: u32,
+        cols: u32,
+        rows: u32,
+    ) -> AtlasMetadata {
         AtlasMetadata::from_grid(id, width, height, cols, rows)
     }
 
@@ -266,7 +263,13 @@ impl PressYourLuck {
     }
 
     /// Create an animation from grid parameters
-    fn create_grid_animation(name: &str, cols: u32, rows: u32, frame_count: u32, fps: f32) -> Animation {
+    fn create_grid_animation(
+        name: &str,
+        cols: u32,
+        rows: u32,
+        frame_count: u32,
+        fps: f32,
+    ) -> Animation {
         Animation::from_grid(name, cols, rows, frame_count, 1.0 / fps)
     }
 
@@ -292,7 +295,9 @@ impl PressYourLuck {
 
     /// Check current playback state of UI animation player
     fn get_ui_playback_state(&self) -> Option<PlaybackState> {
-        self.ui_animation_player.as_ref().map(|p| p.playback_state())
+        self.ui_animation_player
+            .as_ref()
+            .map(|p| p.playback_state())
     }
 
     /// Process animation events from the UI player
@@ -308,13 +313,16 @@ impl PressYourLuck {
     }
 
     /// Create a particle with custom parameters
-    fn create_particle_with_color(x: f32, y: f32, vx: f32, vy: f32, lifetime: f32, color: Color) -> Particle {
+    fn create_particle_with_color(
+        x: f32,
+        y: f32,
+        vx: f32,
+        vy: f32,
+        lifetime: f32,
+        color: Color,
+    ) -> Particle {
         use ggez::mint::Vector2;
-        let mut particle = Particle::new(
-            Vector2 { x, y },
-            Vector2 { x: vx, y: vy },
-            lifetime,
-        );
+        let mut particle = Particle::new(Vector2 { x, y }, Vector2 { x: vx, y: vy }, lifetime);
         particle.color = color;
         particle.color_start = color;
         particle.color_end = Color::new(color.r, color.g, color.b, 0.0);
@@ -369,7 +377,10 @@ impl PressYourLuck {
 
     /// Get particle system statistics
     fn get_particle_stats(&self) -> (usize, usize) {
-        (self.particle_system.particle_count(), self.particle_system.emitter_count())
+        (
+            self.particle_system.particle_count(),
+            self.particle_system.emitter_count(),
+        )
     }
 
     /// Control UI animation player
@@ -388,7 +399,9 @@ impl PressYourLuck {
 
     /// Check if UI animation is playing
     fn is_ui_animation_playing(&self) -> bool {
-        self.ui_animation_player.as_ref().map_or(false, |p| p.is_playing())
+        self.ui_animation_player
+            .as_ref()
+            .is_some_and(|p| p.is_playing())
     }
 
     /// Manage atlas lifecycle
@@ -466,12 +479,17 @@ impl PressYourLuck {
     }
 
     /// Get atlas frame info and UV
-    fn get_atlas_frame_data(&self, atlas_id: &str, frame_idx: u32) -> Option<(ggez::graphics::Rect, String)> {
+    fn get_atlas_frame_data(
+        &self,
+        atlas_id: &str,
+        frame_idx: u32,
+    ) -> Option<(ggez::graphics::Rect, String)> {
         if let Some(atlas) = self.atlas_manager.get(atlas_id) {
             let uv = atlas.get_frame_uv(frame_idx);
             let frame_name = format!("frame_{:04}", frame_idx);
             if let Some(frame_info) = atlas.get_frame(&frame_name) {
-                let info_uv = frame_info.to_uv(atlas.metadata.width as f32, atlas.metadata.height as f32);
+                let info_uv =
+                    frame_info.to_uv(atlas.metadata.width as f32, atlas.metadata.height as f32);
                 return Some((info_uv, frame_info.name.clone()));
             }
             return Some((uv, frame_name));
@@ -481,7 +499,9 @@ impl PressYourLuck {
 
     /// Get atlas frame count
     fn get_atlas_frame_count(&self, atlas_id: &str) -> u32 {
-        self.atlas_manager.get(atlas_id).map_or(0, |a| a.frame_count())
+        self.atlas_manager
+            .get(atlas_id)
+            .map_or(0, |a| a.frame_count())
     }
 
     /// Extended audio event handling for intro/ambient
@@ -510,7 +530,8 @@ impl PressYourLuck {
     /// Set Whammy to idle state
     fn set_whammy_idle(&mut self, ctx: &mut Context) {
         let (screen_w, screen_h) = ctx.gfx.drawable_size();
-        self.whammy_animator.play(WhammyAnimationId::Idle, screen_w / 2.0, screen_h / 2.0);
+        self.whammy_animator
+            .play(WhammyAnimationId::Idle, screen_w / 2.0, screen_h / 2.0);
     }
 
     /// Process keyboard input based on current game phase
@@ -522,23 +543,23 @@ impl PressYourLuck {
 
         match self.game_state.phase {
             GamePhase::Start => {
-                if keycode == KeyCode::Space || keycode == KeyCode::Return {
+                if keycode == KeyCode::Space || keycode == KeyCode::Enter {
                     return Some(InputAction::StartGame);
                 }
             }
 
             GamePhase::Questions => {
-                if keycode == KeyCode::B {
+                if keycode == KeyCode::KeyB {
                     return Some(InputAction::BuzzIn);
                 }
 
                 // Answer selection (when choices are showing)
                 match keycode {
-                    KeyCode::Key1 => return Some(InputAction::SelectAnswer(0)),
-                    KeyCode::Key2 => return Some(InputAction::SelectAnswer(1)),
-                    KeyCode::Key3 => return Some(InputAction::SelectAnswer(2)),
-                    KeyCode::Key4 => return Some(InputAction::SelectAnswer(3)),
-                    KeyCode::Space | KeyCode::Return => return Some(InputAction::Continue),
+                    KeyCode::Digit1 => return Some(InputAction::SelectAnswer(0)),
+                    KeyCode::Digit2 => return Some(InputAction::SelectAnswer(1)),
+                    KeyCode::Digit3 => return Some(InputAction::SelectAnswer(2)),
+                    KeyCode::Digit4 => return Some(InputAction::SelectAnswer(3)),
+                    KeyCode::Space | KeyCode::Enter => return Some(InputAction::Continue),
                     _ => {}
                 }
             }
@@ -554,7 +575,7 @@ impl PressYourLuck {
                         return Some(InputAction::StartSpin);
                     }
 
-                    if keycode == KeyCode::P {
+                    if keycode == KeyCode::KeyP {
                         return Some(InputAction::Pass);
                     }
                 }
@@ -562,10 +583,10 @@ impl PressYourLuck {
                 // Corner selection (for Pick a Corner)
                 if self.game_state.awaiting_corner_selection {
                     match keycode {
-                        KeyCode::Key1 => return Some(InputAction::SelectCorner(0)),
-                        KeyCode::Key2 => return Some(InputAction::SelectCorner(1)),
-                        KeyCode::Key3 => return Some(InputAction::SelectCorner(2)),
-                        KeyCode::Key4 => return Some(InputAction::SelectCorner(3)),
+                        KeyCode::Digit1 => return Some(InputAction::SelectCorner(0)),
+                        KeyCode::Digit2 => return Some(InputAction::SelectCorner(1)),
+                        KeyCode::Digit3 => return Some(InputAction::SelectCorner(2)),
+                        KeyCode::Digit4 => return Some(InputAction::SelectCorner(3)),
                         _ => {}
                     }
                 }
@@ -573,20 +594,20 @@ impl PressYourLuck {
                 // Special choice (for $2000 or Lose Whammy)
                 if self.game_state.awaiting_special_choice {
                     match keycode {
-                        KeyCode::Key1 => return Some(InputAction::SelectSpecialChoice(0)),
-                        KeyCode::Key2 => return Some(InputAction::SelectSpecialChoice(1)),
+                        KeyCode::Digit1 => return Some(InputAction::SelectSpecialChoice(0)),
+                        KeyCode::Digit2 => return Some(InputAction::SelectSpecialChoice(1)),
                         _ => {}
                     }
                 }
 
                 // Continue after result
-                if keycode == KeyCode::Return {
+                if keycode == KeyCode::Enter {
                     return Some(InputAction::Continue);
                 }
             }
 
             GamePhase::GameOver => {
-                if keycode == KeyCode::Space || keycode == KeyCode::Return {
+                if keycode == KeyCode::Space || keycode == KeyCode::Enter {
                     return Some(InputAction::StartGame);
                 }
             }
@@ -645,24 +666,18 @@ impl EventHandler for PressYourLuck {
                 }
                 game::AudioEvent::WinnerFanfare => {
                     // Play board music transition for winner
-                    self.audio_engine.handle_extended_event(
-                        ctx,
-                        ExtendedAudioEvent::StopBoardMusic,
-                    );
+                    self.audio_engine
+                        .handle_extended_event(ctx, ExtendedAudioEvent::StopBoardMusic);
                 }
                 game::AudioEvent::StartTensionMusic => {
                     // Start board spin ambient along with tension
-                    self.audio_engine.handle_extended_event(
-                        ctx,
-                        ExtendedAudioEvent::StartBoardSpinAmbient,
-                    );
+                    self.audio_engine
+                        .handle_extended_event(ctx, ExtendedAudioEvent::StartBoardSpinAmbient);
                 }
                 game::AudioEvent::StopTensionMusic => {
                     // Stop board spin ambient along with tension
-                    self.audio_engine.handle_extended_event(
-                        ctx,
-                        ExtendedAudioEvent::StopBoardSpinAmbient,
-                    );
+                    self.audio_engine
+                        .handle_extended_event(ctx, ExtendedAudioEvent::StopBoardSpinAmbient);
                 }
                 _ => {}
             }
@@ -703,18 +718,14 @@ impl EventHandler for PressYourLuck {
 
             // Play Whammy catchphrase using ExtendedAudioEvent
             let whammy_type = WhammyAnimationType::random();
-            self.audio_engine.handle_extended_event(
-                ctx,
-                ExtendedAudioEvent::WhammyCatchphrase(whammy_type),
-            );
+            self.audio_engine
+                .handle_extended_event(ctx, ExtendedAudioEvent::WhammyCatchphrase(whammy_type));
 
             // Trigger audience gasp reaction based on contestant's current score
             let contestant = &self.game_state.contestants[self.game_state.current_player];
             let intensity = ReactionIntensity::from_win_amount(contestant.score);
-            self.audio_engine.handle_extended_event(
-                ctx,
-                ExtendedAudioEvent::AudienceGaspIntensity(intensity),
-            );
+            self.audio_engine
+                .handle_extended_event(ctx, ExtendedAudioEvent::AudienceGaspIntensity(intensity));
         }
 
         // Sync Whammy animation state back to game state
@@ -743,7 +754,7 @@ impl EventHandler for PressYourLuck {
             let _atlas_type = std::any::type_name::<SpriteAtlas>();
 
             // Verify animation library type
-            let _lib_type = std::any::type_name::<WhammyAnimationLibrary>();
+            let _lib_type = std::any::type_name::<animation::WhammyAnimationLibrary>();
 
             // Verify WhammyState type - use value to avoid warning
             let _whammy_state = self.get_whammy_state();
@@ -864,7 +875,8 @@ impl EventHandler for PressYourLuck {
             .draw(&mut canvas, ctx, &self.game_state, screen_w, screen_h);
 
         // Screen effects overlay (flash, vignette)
-        self.screen_effects.draw(&mut canvas, ctx, screen_w, screen_h);
+        self.screen_effects
+            .draw(&mut canvas, ctx, screen_w, screen_h);
 
         // Debug info in development builds
         #[cfg(debug_assertions)]
@@ -881,7 +893,7 @@ impl EventHandler for PressYourLuck {
     }
 
     fn key_down_event(&mut self, ctx: &mut Context, input: KeyInput, _repeat: bool) -> GameResult {
-        if let Some(keycode) = input.keycode {
+        if let PhysicalKey::Code(keycode) = input.event.physical_key {
             if let Some(action) = self.process_input(keycode) {
                 match action {
                     InputAction::Quit => ctx.request_quit(),

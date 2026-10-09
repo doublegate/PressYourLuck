@@ -533,7 +533,7 @@ impl UiManager {
             .enumerate()
             .filter(|(_, c)| !c.eliminated)
             .collect();
-        positions.sort_by(|a, b| b.1.score.cmp(&a.1.score));
+        positions.sort_by_key(|a| std::cmp::Reverse(a.1.score));
 
         let mut summary_parts = Vec::new();
         for (i, contestant) in game_state.contestants.iter().enumerate() {

@@ -14,9 +14,10 @@ use super::types::{Animation, AnimationFrame, LoopMode};
 // =============================================================================
 
 /// Current state of animation playback
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum PlaybackState {
     /// Not playing
+    #[default]
     Stopped,
 
     /// Currently playing
@@ -27,12 +28,6 @@ pub enum PlaybackState {
 
     /// Completed (for non-looping animations)
     Completed,
-}
-
-impl Default for PlaybackState {
-    fn default() -> Self {
-        Self::Stopped
-    }
 }
 
 // =============================================================================
@@ -403,9 +398,9 @@ impl AnimationPlayer {
                 if self.state.time >= animation.total_duration {
                     self.state.time = animation.total_duration;
                     self.state.state = PlaybackState::Completed;
-                    self.state.triggered_events.push(AnimationEvent::Completed(
-                        self.state.animation_name.clone(),
-                    ));
+                    self.state
+                        .triggered_events
+                        .push(AnimationEvent::Completed(self.state.animation_name.clone()));
                 }
             }
             LoopMode::OnceAndHide => {
@@ -413,38 +408,38 @@ impl AnimationPlayer {
                     self.state.time = animation.total_duration;
                     self.state.state = PlaybackState::Completed;
                     self.visible = false;
-                    self.state.triggered_events.push(AnimationEvent::Completed(
-                        self.state.animation_name.clone(),
-                    ));
+                    self.state
+                        .triggered_events
+                        .push(AnimationEvent::Completed(self.state.animation_name.clone()));
                 }
             }
             LoopMode::Loop => {
                 while self.state.time >= animation.total_duration {
                     self.state.time -= animation.total_duration;
-                    self.state.triggered_events.push(AnimationEvent::Looped(
-                        self.state.animation_name.clone(),
-                    ));
+                    self.state
+                        .triggered_events
+                        .push(AnimationEvent::Looped(self.state.animation_name.clone()));
                 }
                 while self.state.time < 0.0 {
                     self.state.time += animation.total_duration;
-                    self.state.triggered_events.push(AnimationEvent::Looped(
-                        self.state.animation_name.clone(),
-                    ));
+                    self.state
+                        .triggered_events
+                        .push(AnimationEvent::Looped(self.state.animation_name.clone()));
                 }
             }
             LoopMode::PingPong => {
                 let cycle = animation.total_duration * 2.0;
                 while self.state.time >= cycle {
                     self.state.time -= cycle;
-                    self.state.triggered_events.push(AnimationEvent::Looped(
-                        self.state.animation_name.clone(),
-                    ));
+                    self.state
+                        .triggered_events
+                        .push(AnimationEvent::Looped(self.state.animation_name.clone()));
                 }
                 while self.state.time < 0.0 {
                     self.state.time += cycle;
-                    self.state.triggered_events.push(AnimationEvent::Looped(
-                        self.state.animation_name.clone(),
-                    ));
+                    self.state
+                        .triggered_events
+                        .push(AnimationEvent::Looped(self.state.animation_name.clone()));
                 }
             }
         }

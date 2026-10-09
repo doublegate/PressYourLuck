@@ -1898,12 +1898,12 @@ impl GameState {
                     }
                 }
             }
-            GamePhase::Board => {
-                // Continue after result display
-                if !self.is_spinning && !self.whammy_animation.active && !self.result_state.showing
-                {
-                    self.check_turn_end();
-                }
+            GamePhase::Board
+                if !self.is_spinning
+                    && !self.whammy_animation.active
+                    && !self.result_state.showing =>
+            {
+                self.check_turn_end();
             }
             _ => {}
         }
@@ -2442,7 +2442,7 @@ impl GameState {
         }
 
         // Sort by score descending
-        others.sort_by(|a, b| b.1.cmp(&a.1));
+        others.sort_by_key(|a| std::cmp::Reverse(a.1));
 
         // If current player is leading or tied for lead, pass to 2nd place
         if current.score >= others[0].1 && others.len() > 1 {

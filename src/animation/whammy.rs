@@ -6,9 +6,9 @@
 //! ## Animation Categories
 //! - **Core (5)**: Hammer, Pogo Stick, Roller Skating, TNT, Fang (Boxing)
 //! - **Extended (10)**: Boombox, UFO, Fishing, Skydiving, Cannon, Surfing,
-//!                      Karate, Graduation, Computer, Baseball
+//!   Karate, Graduation, Computer, Baseball
 //! - **Holiday (10)**: Santa, Easter Bunny, Cupid, Leprechaun, Turkey,
-//!                     Uncle Sam, Witch, Jack-o-lantern, Pilgrim, Graduation
+//!   Uncle Sam, Witch, Jack-o-lantern, Pilgrim, Graduation
 //! - **Special (5)**: Trap Door, Group Goodbye, Sad Walk-off, Dance, Laugh
 
 use ggez::graphics::Color;
@@ -16,7 +16,9 @@ use ggez::mint::Vector2;
 use ggez::{Context, GameResult};
 use std::collections::HashMap;
 
-use super::atlas::{AtlasManager, SpriteAtlas, WHAMMY_HIGHLIGHT, WHAMMY_OUTLINE, WHAMMY_RED, WHAMMY_SHADOW};
+use super::atlas::{
+    AtlasManager, SpriteAtlas, WHAMMY_HIGHLIGHT, WHAMMY_OUTLINE, WHAMMY_RED, WHAMMY_SHADOW,
+};
 use super::effects::{FlashMode, ScreenEffects, ScreenFlash, ScreenShake};
 use super::particles::{Particle, ParticleEmitter, ParticleSystem, ParticleType};
 use super::player::{AnimationEvent, AnimationPlayer, AnimationState, PlaybackState};
@@ -312,11 +314,8 @@ impl WhammyAnimationLibrary {
 
         // Create placeholder atlases for all animations
         for anim_id in WhammyAnimationId::all() {
-            let atlas = SpriteAtlas::create_whammy_placeholder(
-                ctx,
-                anim_id.name(),
-                anim_id.frame_count(),
-            )?;
+            let atlas =
+                SpriteAtlas::create_whammy_placeholder(ctx, anim_id.name(), anim_id.frame_count())?;
             library.atlas_manager.add(atlas);
 
             // Create animation definition
@@ -375,9 +374,13 @@ impl WhammyAnimationLibrary {
         // Add screen shake to appropriate animations using builder methods
         builder = match id {
             WhammyAnimationId::Hammer => builder.screen_shake(20.0, 0.3),
-            WhammyAnimationId::Tnt => builder.screen_shake(30.0, 0.5).screen_flash(1.0, 0.5, 0.0, 0.3),
+            WhammyAnimationId::Tnt => builder
+                .screen_shake(30.0, 0.5)
+                .screen_flash(1.0, 0.5, 0.0, 0.3),
             WhammyAnimationId::FangBoxing => builder.screen_shake(15.0, 0.2),
-            WhammyAnimationId::Cannon => builder.screen_shake(25.0, 0.4).screen_flash(1.0, 0.8, 0.2, 0.2),
+            WhammyAnimationId::Cannon => builder
+                .screen_shake(25.0, 0.4)
+                .screen_flash(1.0, 0.8, 0.2, 0.2),
             WhammyAnimationId::Karate => builder.screen_shake(12.0, 0.15),
             WhammyAnimationId::TrapDoor => builder.screen_shake(10.0, 0.3),
             _ => builder,
@@ -498,10 +501,11 @@ impl WhammyAnimationLibrary {
 // =============================================================================
 
 /// State for the Whammy animation
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 #[allow(dead_code)]
 pub enum WhammyState {
     /// Hidden/inactive
+    #[default]
     Hidden,
 
     /// Entering the screen
@@ -515,12 +519,6 @@ pub enum WhammyState {
 
     /// Idle (looping)
     Idle,
-}
-
-impl Default for WhammyState {
-    fn default() -> Self {
-        Self::Hidden
-    }
 }
 
 /// Main Whammy animation controller
@@ -713,9 +711,15 @@ impl WhammyAnimator {
                             if let Some((r, g, b, duration)) = anim.screen_flash {
                                 // Choose FlashMode based on animation type for variety
                                 let flash_mode = match id {
-                                    WhammyAnimationId::Tnt | WhammyAnimationId::Cannon => FlashMode::Flash,
-                                    WhammyAnimationId::Dance | WhammyAnimationId::Laugh => FlashMode::Pulse,
-                                    WhammyAnimationId::TrapDoor | WhammyAnimationId::SadWalkOff => FlashMode::FadeOut,
+                                    WhammyAnimationId::Tnt | WhammyAnimationId::Cannon => {
+                                        FlashMode::Flash
+                                    }
+                                    WhammyAnimationId::Dance | WhammyAnimationId::Laugh => {
+                                        FlashMode::Pulse
+                                    }
+                                    WhammyAnimationId::TrapDoor | WhammyAnimationId::SadWalkOff => {
+                                        FlashMode::FadeOut
+                                    }
                                     _ => FlashMode::FadeInOut,
                                 };
                                 screen_effects.flash_with_mode(
@@ -829,7 +833,9 @@ impl WhammyAnimator {
     /// Get the current animation state info
     pub fn get_animation_state(&self) -> Option<AnimationState> {
         if self.player.current_animation().is_some() {
-            Some(AnimationState::new(self.player.current_animation().unwrap_or("idle")))
+            Some(AnimationState::new(
+                self.player.current_animation().unwrap_or("idle"),
+            ))
         } else {
             None
         }
@@ -843,19 +849,11 @@ impl WhammyAnimator {
     /// Create a particle for manual spawning
     pub fn create_particle(&self, x: f32, y: f32, lifetime: f32) -> Particle {
         use ggez::mint::Vector2 as MintVec2;
-        Particle::new(
-            MintVec2 { x, y },
-            MintVec2 { x: 0.0, y: -50.0 },
-            lifetime,
-        )
+        Particle::new(MintVec2 { x, y }, MintVec2 { x: 0.0, y: -50.0 }, lifetime)
     }
 
     /// Draw the Whammy
-    pub fn draw(
-        &self,
-        canvas: &mut ggez::graphics::Canvas,
-        _ctx: &mut Context,
-    ) {
+    pub fn draw(&self, canvas: &mut ggez::graphics::Canvas, _ctx: &mut Context) {
         if self.state == WhammyState::Hidden {
             return;
         }

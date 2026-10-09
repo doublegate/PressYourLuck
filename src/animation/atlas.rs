@@ -53,13 +53,7 @@ pub struct FrameInfo {
 
 impl FrameInfo {
     /// Create frame info for a grid cell
-    pub fn from_grid(
-        name: &str,
-        col: u32,
-        row: u32,
-        cell_width: u32,
-        cell_height: u32,
-    ) -> Self {
+    pub fn from_grid(name: &str, col: u32, row: u32, cell_width: u32, cell_height: u32) -> Self {
         Self {
             name: name.to_string(),
             source_rect: Rect::new(
@@ -121,13 +115,7 @@ pub struct GridInfo {
 
 impl AtlasMetadata {
     /// Create metadata for a grid-based atlas
-    pub fn from_grid(
-        id: &str,
-        width: u32,
-        height: u32,
-        columns: u32,
-        rows: u32,
-    ) -> Self {
+    pub fn from_grid(id: &str, width: u32, height: u32, columns: u32, rows: u32) -> Self {
         let cell_width = width / columns;
         let cell_height = height / rows;
 
@@ -170,12 +158,7 @@ impl AtlasMetadata {
         if let Some(grid) = &self.grid_info {
             let frame_w = 1.0 / grid.columns as f32;
             let frame_h = 1.0 / grid.rows as f32;
-            Rect::new(
-                col as f32 * frame_w,
-                row as f32 * frame_h,
-                frame_w,
-                frame_h,
-            )
+            Rect::new(col as f32 * frame_w, row as f32 * frame_h, frame_w, frame_h)
         } else {
             Rect::new(0.0, 0.0, 1.0, 1.0)
         }
@@ -343,6 +326,7 @@ impl SpriteAtlas {
     }
 
     /// Draw a Whammy character placeholder frame
+    #[allow(clippy::too_many_arguments)]
     fn draw_whammy_frame(
         pixels: &mut [u8],
         atlas_width: u32,
@@ -513,6 +497,7 @@ impl AtlasManager {
     }
 
     /// Get all atlas IDs
+    #[allow(dead_code)]
     pub fn ids(&self) -> Vec<&str> {
         self.atlases.keys().map(|s| s.as_str()).collect()
     }

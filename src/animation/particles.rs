@@ -12,7 +12,7 @@ use std::collections::HashMap;
 // =============================================================================
 
 /// Types of particle effects
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum ParticleType {
     /// Money bills flying away
     MoneyScatter,
@@ -36,16 +36,11 @@ pub enum ParticleType {
     Smoke,
 
     /// Sparkle/shimmer
+    #[default]
     Sparkle,
 
     /// Custom particle
     Custom,
-}
-
-impl Default for ParticleType {
-    fn default() -> Self {
-        Self::Sparkle
-    }
 }
 
 // =============================================================================
@@ -253,7 +248,10 @@ impl Default for ParticleEmitter {
             emission_rate: 10.0,
             particle_lifetime: (0.5, 1.5),
             velocity_range: (
-                Vector2 { x: -50.0, y: -100.0 },
+                Vector2 {
+                    x: -50.0,
+                    y: -100.0,
+                },
                 Vector2 { x: 50.0, y: -50.0 },
             ),
             acceleration: Vector2 { x: 0.0, y: 200.0 }, // Gravity
@@ -290,8 +288,14 @@ impl ParticleEmitter {
             burst_count: Some(30),
             particle_lifetime: (1.5, 2.5),
             velocity_range: (
-                Vector2 { x: -200.0, y: -300.0 },
-                Vector2 { x: 200.0, y: -100.0 },
+                Vector2 {
+                    x: -200.0,
+                    y: -300.0,
+                },
+                Vector2 {
+                    x: 200.0,
+                    y: -100.0,
+                },
             ),
             acceleration: Vector2 { x: 0.0, y: 400.0 },
             color_start: Color::new(0.2, 0.8, 0.2, 1.0), // Green money
@@ -313,12 +317,15 @@ impl ParticleEmitter {
             burst_count: Some(50),
             particle_lifetime: (0.3, 0.8),
             velocity_range: (
-                Vector2 { x: -300.0, y: -300.0 },
+                Vector2 {
+                    x: -300.0,
+                    y: -300.0,
+                },
                 Vector2 { x: 300.0, y: 300.0 },
             ),
             acceleration: Vector2 { x: 0.0, y: 200.0 },
             color_start: Color::new(1.0, 0.8, 0.2, 1.0), // Orange
-            color_end: Color::new(1.0, 0.2, 0.0, 0.0), // Red fade
+            color_end: Color::new(1.0, 0.2, 0.0, 0.0),   // Red fade
             size_start: 8.0,
             size_end: 2.0,
             angular_velocity_range: (0.0, 0.0),
@@ -336,7 +343,10 @@ impl ParticleEmitter {
             burst_count: Some(20),
             particle_lifetime: (0.5, 1.0),
             velocity_range: (
-                Vector2 { x: -150.0, y: -150.0 },
+                Vector2 {
+                    x: -150.0,
+                    y: -150.0,
+                },
                 Vector2 { x: 150.0, y: 150.0 },
             ),
             acceleration: Vector2 { x: 0.0, y: 50.0 },
@@ -360,7 +370,10 @@ impl ParticleEmitter {
             duration: Some(2.0),
             particle_lifetime: (2.0, 4.0),
             velocity_range: (
-                Vector2 { x: -100.0, y: -200.0 },
+                Vector2 {
+                    x: -100.0,
+                    y: -200.0,
+                },
                 Vector2 { x: 100.0, y: -50.0 },
             ),
             acceleration: Vector2 { x: 0.0, y: 150.0 },
@@ -421,10 +434,8 @@ impl ParticleEmitter {
             y: rand_range(self.velocity_range.0.y, self.velocity_range.1.y),
         };
 
-        let angular_velocity = rand_range(
-            self.angular_velocity_range.0,
-            self.angular_velocity_range.1,
-        );
+        let angular_velocity =
+            rand_range(self.angular_velocity_range.0, self.angular_velocity_range.1);
 
         // Random color for confetti
         let (color_start, color_end) = if self.particle_type == ParticleType::Confetti {
@@ -519,12 +530,7 @@ impl ParticleSystem {
             Mesh::new_polygon(
                 ctx,
                 DrawMode::fill(),
-                &[
-                    [0.0, -1.0],
-                    [0.7, 0.0],
-                    [0.0, 1.0],
-                    [-0.7, 0.0],
-                ],
+                &[[0.0, -1.0], [0.7, 0.0], [0.0, 1.0], [-0.7, 0.0]],
                 Color::WHITE,
             )
             .ok(),
@@ -600,7 +606,8 @@ impl ParticleSystem {
         }
 
         // Remove finished emitters
-        self.emitters.retain(|e| !e.is_finished() || e.burst_count.is_some());
+        self.emitters
+            .retain(|e| !e.is_finished() || e.burst_count.is_some());
 
         // Update particles
         for particle in &mut self.particles {
@@ -752,11 +759,8 @@ mod tests {
 
     #[test]
     fn test_particle_death() {
-        let mut particle = Particle::new(
-            Vector2 { x: 0.0, y: 0.0 },
-            Vector2 { x: 0.0, y: 0.0 },
-            1.0,
-        );
+        let mut particle =
+            Particle::new(Vector2 { x: 0.0, y: 0.0 }, Vector2 { x: 0.0, y: 0.0 }, 1.0);
 
         particle.update(1.5);
         assert!(!particle.alive);
