@@ -257,7 +257,12 @@ impl ScreenFlash {
             ctx,
             DrawMode::fill(),
             Rect::new(0.0, 0.0, screen_w, screen_h),
-            Color::new(self.color.r, self.color.g, self.color.b, self.alpha * self.color.a),
+            Color::new(
+                self.color.r,
+                self.color.g,
+                self.color.b,
+                self.alpha * self.color.a,
+            ),
         ) {
             canvas.draw(&rect, DrawParam::default());
         }
@@ -388,13 +393,7 @@ impl ScreenEffects {
     }
 
     /// Draw vignette effect
-    fn draw_vignette(
-        &self,
-        canvas: &mut Canvas,
-        ctx: &mut Context,
-        screen_w: f32,
-        screen_h: f32,
-    ) {
+    fn draw_vignette(&self, canvas: &mut Canvas, ctx: &mut Context, screen_w: f32, screen_h: f32) {
         if self.vignette_intensity < 0.01 {
             return;
         }

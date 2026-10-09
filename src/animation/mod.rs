@@ -15,9 +15,9 @@
 //! The Whammy character features 30 unique animations across categories:
 //! - Core 5: Hammer, Pogo Stick, Roller Skating, TNT, Fang (Boxing)
 //! - Extended 10: Boombox, UFO, Fishing, Skydiving, Cannon, Surfing,
-//!                Karate, Graduation, Computer, Baseball
+//!   Karate, Graduation, Computer, Baseball
 //! - Holiday 10: Santa, Easter Bunny, Cupid, Leprechaun, Turkey, Uncle Sam,
-//!               Witch, Jack-o-lantern, Pilgrim, Graduation
+//!   Witch, Jack-o-lantern, Pilgrim, Graduation
 //! - Special 3: Trap Door, Group Goodbye, Sad Walk-off
 
 mod atlas;

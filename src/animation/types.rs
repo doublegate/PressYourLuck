@@ -94,9 +94,10 @@ impl AnimationFrame {
 // =============================================================================
 
 /// How an animation repeats
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum LoopMode {
     /// Play once and stop on last frame
+    #[default]
     Once,
 
     /// Loop continuously from start
@@ -107,12 +108,6 @@ pub enum LoopMode {
 
     /// Play once and hide when complete
     OnceAndHide,
-}
-
-impl Default for LoopMode {
-    fn default() -> Self {
-        Self::Once
-    }
 }
 
 // =============================================================================
@@ -311,12 +306,7 @@ impl Animation {
         for i in 0..frame_count {
             let col = i % cols;
             let row = i / cols;
-            let rect = Rect::new(
-                col as f32 * frame_w,
-                row as f32 * frame_h,
-                frame_w,
-                frame_h,
-            );
+            let rect = Rect::new(col as f32 * frame_w, row as f32 * frame_h, frame_w, frame_h);
             anim.add_frame(AnimationFrame::new(rect, frame_duration));
         }
 
@@ -386,23 +376,12 @@ impl AnimationBuilder {
     }
 
     /// Add a frame from grid position
-    pub fn frame_grid(
-        mut self,
-        col: u32,
-        row: u32,
-        cols: u32,
-        rows: u32,
-        duration: f32,
-    ) -> Self {
+    pub fn frame_grid(mut self, col: u32, row: u32, cols: u32, rows: u32, duration: f32) -> Self {
         let frame_w = 1.0 / cols as f32;
         let frame_h = 1.0 / rows as f32;
-        let rect = Rect::new(
-            col as f32 * frame_w,
-            row as f32 * frame_h,
-            frame_w,
-            frame_h,
-        );
-        self.animation.add_frame(AnimationFrame::new(rect, duration));
+        let rect = Rect::new(col as f32 * frame_w, row as f32 * frame_h, frame_w, frame_h);
+        self.animation
+            .add_frame(AnimationFrame::new(rect, duration));
         self.current_time += duration;
         self
     }
@@ -423,13 +402,9 @@ impl AnimationBuilder {
             let frame_idx = start_frame + i;
             let col = frame_idx % cols;
             let row = frame_idx / cols;
-            let rect = Rect::new(
-                col as f32 * frame_w,
-                row as f32 * frame_h,
-                frame_w,
-                frame_h,
-            );
-            self.animation.add_frame(AnimationFrame::new(rect, duration_per_frame));
+            let rect = Rect::new(col as f32 * frame_w, row as f32 * frame_h, frame_w, frame_h);
+            self.animation
+                .add_frame(AnimationFrame::new(rect, duration_per_frame));
             self.current_time += duration_per_frame;
         }
         self

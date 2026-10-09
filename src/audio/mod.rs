@@ -609,7 +609,7 @@ impl AudioEngine {
         id: &str,
         wav_data: Vec<u8>,
     ) -> Option<Source> {
-        let sound_data: SoundData = wav_data.into();
+        let sound_data = SoundData::from_bytes(&wav_data).ok()?;
         let cached_data = self.cache.get_or_load(id, sound_data);
         Source::from_data(ctx, cached_data).ok()
     }
@@ -980,27 +980,31 @@ impl AudioEngine {
     }
 
     /// Play a board tone for the given square index
-    fn play_board_tone(&mut self, ctx: &Context, index: usize) {
+    fn play_board_tone(&mut self, _ctx: &Context, index: usize) {
         if index < self.board_tones.len() {
             if let Some(sound) = &mut self.board_tones[index] {
-                let volume = self.config.effective_volume(self.config.effects_volume, 0.6);
+                let volume = self
+                    .config
+                    .effective_volume(self.config.effects_volume, 0.6);
                 sound.set_volume(volume);
-                let _ = sound.play_detached(ctx);
+                sound.play();
             }
         }
     }
 
     /// Play the Whammy foghorn sound
-    fn play_whammy(&mut self, ctx: &Context) {
+    fn play_whammy(&mut self, _ctx: &Context) {
         if let Some(sound) = &mut self.whammy_sound {
-            let volume = self.config.effective_volume(self.config.effects_volume, 0.8);
+            let volume = self
+                .config
+                .effective_volume(self.config.effects_volume, 0.8);
             sound.set_volume(volume);
-            let _ = sound.play_detached(ctx);
+            sound.play();
         }
     }
 
     /// Play a Whammy catchphrase for the given animation type
-    fn play_whammy_catchphrase(&mut self, ctx: &Context, anim_type: WhammyAnimationType) {
+    fn play_whammy_catchphrase(&mut self, _ctx: &Context, anim_type: WhammyAnimationType) {
         // Enable music ducking
         if self.config.ducking_enabled {
             self.music_ducked = true;
@@ -1013,7 +1017,7 @@ impl AudioEngine {
         if let Some(sound) = self.whammy_catchphrases.get_mut(&anim_name) {
             let volume = self.config.effective_volume(self.config.voice_volume, 0.75);
             sound.set_volume(volume);
-            let _ = sound.play_detached(ctx);
+            sound.play();
             return;
         }
 
@@ -1023,13 +1027,13 @@ impl AudioEngine {
             if let Some(Some(sound)) = self.generic_whammy_catchphrases.get_mut(idx) {
                 let volume = self.config.effective_volume(self.config.voice_volume, 0.75);
                 sound.set_volume(volume);
-                let _ = sound.play_detached(ctx);
+                sound.play();
             }
         }
     }
 
     /// Play cash register sound
-    fn play_cash(&mut self, ctx: &Context, big: bool) {
+    fn play_cash(&mut self, _ctx: &Context, big: bool) {
         let sound = if big {
             &mut self.big_cash_sound
         } else {
@@ -1040,104 +1044,120 @@ impl AudioEngine {
                 .config
                 .effective_volume(self.config.effects_volume, if big { 0.75 } else { 0.7 });
             s.set_volume(volume);
-            let _ = s.play_detached(ctx);
+            s.play();
         }
     }
 
     /// Play prize fanfare
-    fn play_prize(&mut self, ctx: &Context) {
+    fn play_prize(&mut self, _ctx: &Context) {
         if let Some(sound) = &mut self.prize_sound {
-            let volume = self.config.effective_volume(self.config.effects_volume, 0.7);
+            let volume = self
+                .config
+                .effective_volume(self.config.effects_volume, 0.7);
             sound.set_volume(volume);
-            let _ = sound.play_detached(ctx);
+            sound.play();
         }
     }
 
     /// Play special square sound
-    fn play_special(&mut self, ctx: &Context) {
+    fn play_special(&mut self, _ctx: &Context) {
         if let Some(sound) = &mut self.special_sound {
-            let volume = self.config.effective_volume(self.config.effects_volume, 0.7);
+            let volume = self
+                .config
+                .effective_volume(self.config.effects_volume, 0.7);
             sound.set_volume(volume);
-            let _ = sound.play_detached(ctx);
+            sound.play();
         }
     }
 
     /// Play correct answer chime
-    fn play_correct(&mut self, ctx: &Context) {
+    fn play_correct(&mut self, _ctx: &Context) {
         if let Some(sound) = &mut self.correct_sound {
-            let volume = self.config.effective_volume(self.config.effects_volume, 0.6);
+            let volume = self
+                .config
+                .effective_volume(self.config.effects_volume, 0.6);
             sound.set_volume(volume);
-            let _ = sound.play_detached(ctx);
+            sound.play();
         }
     }
 
     /// Play wrong answer buzzer
-    fn play_wrong(&mut self, ctx: &Context) {
+    fn play_wrong(&mut self, _ctx: &Context) {
         if let Some(sound) = &mut self.wrong_sound {
-            let volume = self.config.effective_volume(self.config.effects_volume, 0.6);
+            let volume = self
+                .config
+                .effective_volume(self.config.effects_volume, 0.6);
             sound.set_volume(volume);
-            let _ = sound.play_detached(ctx);
+            sound.play();
         }
     }
 
     /// Play sad trombone for elimination
-    fn play_sad_trombone(&mut self, ctx: &Context) {
+    fn play_sad_trombone(&mut self, _ctx: &Context) {
         if let Some(sound) = &mut self.sad_trombone {
-            let volume = self.config.effective_volume(self.config.effects_volume, 0.7);
+            let volume = self
+                .config
+                .effective_volume(self.config.effects_volume, 0.7);
             sound.set_volume(volume);
-            let _ = sound.play_detached(ctx);
+            sound.play();
         }
     }
 
     /// Play spin added bell
-    fn play_spin_added(&mut self, ctx: &Context) {
+    fn play_spin_added(&mut self, _ctx: &Context) {
         if let Some(sound) = &mut self.spin_added_sound {
-            let volume = self.config.effective_volume(self.config.effects_volume, 0.5);
+            let volume = self
+                .config
+                .effective_volume(self.config.effects_volume, 0.5);
             sound.set_volume(volume);
-            let _ = sound.play_detached(ctx);
+            sound.play();
         }
     }
 
     /// Play buzz-in sound
-    fn play_buzz_in(&mut self, ctx: &Context) {
+    fn play_buzz_in(&mut self, _ctx: &Context) {
         if let Some(sound) = &mut self.buzz_in_sound {
-            let volume = self.config.effective_volume(self.config.effects_volume, 0.6);
+            let volume = self
+                .config
+                .effective_volume(self.config.effects_volume, 0.6);
             sound.set_volume(volume);
-            let _ = sound.play_detached(ctx);
+            sound.play();
         }
     }
 
     /// Play winner fanfare
-    fn play_winner(&mut self, ctx: &Context) {
+    fn play_winner(&mut self, _ctx: &Context) {
         if let Some(sound) = &mut self.winner_sound {
-            let volume = self
-                .config
-                .effective_music_volume(0.8, self.music_ducked);
+            let volume = self.config.effective_music_volume(0.8, self.music_ducked);
             sound.set_volume(volume);
-            let _ = sound.play_detached(ctx);
+            sound.play();
         }
     }
 
     /// Play button click sound
-    pub fn play_button_click(&mut self, ctx: &Context) {
+    pub fn play_button_click(&mut self, _ctx: &Context) {
         if let Some(sound) = &mut self.click_sound {
-            let volume = self.config.effective_volume(self.config.effects_volume, 0.3);
+            let volume = self
+                .config
+                .effective_volume(self.config.effects_volume, 0.3);
             sound.set_volume(volume);
-            let _ = sound.play_detached(ctx);
+            sound.play();
         }
     }
 
     /// Play board stop mechanical "chunk" sound
-    fn play_board_stop(&mut self, ctx: &Context) {
+    fn play_board_stop(&mut self, _ctx: &Context) {
         if let Some(sound) = &mut self.board_stop_sound {
-            let volume = self.config.effective_volume(self.config.effects_volume, 0.7);
+            let volume = self
+                .config
+                .effective_volume(self.config.effects_volume, 0.7);
             sound.set_volume(volume);
-            let _ = sound.play_detached(ctx);
+            sound.play();
         }
     }
 
     /// Play audience cheer with intensity-based variation selection
-    fn play_audience_cheer(&mut self, ctx: &Context, intensity: ReactionIntensity) {
+    fn play_audience_cheer(&mut self, _ctx: &Context, intensity: ReactionIntensity) {
         if self.audience_cheer_sounds.is_empty() {
             return;
         }
@@ -1165,12 +1185,12 @@ impl AudioEngine {
                 .config
                 .effective_volume(self.config.audience_volume, base_volume);
             sound.set_volume(volume);
-            let _ = sound.play_detached(ctx);
+            sound.play();
         }
     }
 
     /// Play audience gasp with intensity-based variation selection
-    fn play_audience_gasp(&mut self, ctx: &Context, intensity: ReactionIntensity) {
+    fn play_audience_gasp(&mut self, _ctx: &Context, intensity: ReactionIntensity) {
         if self.audience_gasp_sounds.is_empty() {
             return;
         }
@@ -1198,110 +1218,106 @@ impl AudioEngine {
                 .config
                 .effective_volume(self.config.audience_volume, base_volume);
             sound.set_volume(volume);
-            let _ = sound.play_detached(ctx);
+            sound.play();
         }
     }
 
     /// Play the intro theme music
-    fn play_intro_theme(&mut self, ctx: &Context) {
+    fn play_intro_theme(&mut self, _ctx: &Context) {
         if let Some(sound) = &mut self.intro_theme {
-            let volume = self
-                .config
-                .effective_music_volume(0.7, self.music_ducked);
+            let volume = self.config.effective_music_volume(0.7, self.music_ducked);
             sound.set_volume(volume);
-            let _ = sound.play_detached(ctx);
+            sound.play();
         }
     }
 
     /// Start playing board music loop
-    fn start_board_music(&mut self, ctx: &Context) {
+    fn start_board_music(&mut self, _ctx: &Context) {
         if !self.board_music_playing {
             if let Some(sound) = &mut self.board_music {
-                let volume = self
-                    .config
-                    .effective_music_volume(0.5, self.music_ducked);
+                let volume = self.config.effective_music_volume(0.5, self.music_ducked);
                 sound.set_volume(volume);
-                let _ = sound.play_detached(ctx);
+                sound.play();
                 self.board_music_playing = true;
             }
         }
     }
 
     /// Stop playing board music
-    fn stop_board_music(&mut self, ctx: &Context) {
+    fn stop_board_music(&mut self, _ctx: &Context) {
         if self.board_music_playing {
             if let Some(sound) = &mut self.board_music {
-                let _ = sound.stop(ctx);
+                sound.stop();
             }
             self.board_music_playing = false;
         }
     }
 
     /// Start playing tension music loop (for spinning)
-    pub fn start_tension_music(&mut self, ctx: &Context) {
+    pub fn start_tension_music(&mut self, _ctx: &Context) {
         if !self.tension_playing {
             if let Some(sound) = &mut self.tension_music {
-                let volume = self
-                    .config
-                    .effective_music_volume(0.25, self.music_ducked);
+                let volume = self.config.effective_music_volume(0.25, self.music_ducked);
                 sound.set_volume(volume);
-                let _ = sound.play_detached(ctx);
+                sound.play();
                 self.tension_playing = true;
             }
         }
     }
 
     /// Stop playing tension music
-    pub fn stop_tension_music(&mut self, ctx: &Context) {
+    pub fn stop_tension_music(&mut self, _ctx: &Context) {
         if self.tension_playing {
             if let Some(sound) = &mut self.tension_music {
-                let _ = sound.stop(ctx);
+                sound.stop();
             }
             self.tension_playing = false;
         }
     }
 
     /// Start ambient audience murmur
-    fn start_ambient_murmur(&mut self, ctx: &Context) {
+    fn start_ambient_murmur(&mut self, _ctx: &Context) {
         if !self.murmur_playing && self.config.ambient_audience_enabled {
             if let Some(sound) = &mut self.audience_murmur {
                 let volume = self
                     .config
                     .effective_volume(self.config.audience_volume, 0.15);
                 sound.set_volume(volume);
-                let _ = sound.play_detached(ctx);
+                sound.play();
                 self.murmur_playing = true;
             }
         }
     }
 
     /// Stop ambient audience murmur
-    fn stop_ambient_murmur(&mut self, ctx: &Context) {
+    fn stop_ambient_murmur(&mut self, _ctx: &Context) {
         if self.murmur_playing {
             if let Some(sound) = &mut self.audience_murmur {
-                let _ = sound.stop(ctx);
+                sound.stop();
             }
             self.murmur_playing = false;
         }
     }
 
     /// Start board spin ambient sound
-    fn start_board_spin_ambient(&mut self, ctx: &Context) {
+    fn start_board_spin_ambient(&mut self, _ctx: &Context) {
         if !self.spin_ambient_playing {
             if let Some(sound) = &mut self.board_spin_ambient {
-                let volume = self.config.effective_volume(self.config.effects_volume, 0.4);
+                let volume = self
+                    .config
+                    .effective_volume(self.config.effects_volume, 0.4);
                 sound.set_volume(volume);
-                let _ = sound.play_detached(ctx);
+                sound.play();
                 self.spin_ambient_playing = true;
             }
         }
     }
 
     /// Stop board spin ambient sound
-    fn stop_board_spin_ambient(&mut self, ctx: &Context) {
+    fn stop_board_spin_ambient(&mut self, _ctx: &Context) {
         if self.spin_ambient_playing {
             if let Some(sound) = &mut self.board_spin_ambient {
-                let _ = sound.stop(ctx);
+                sound.stop();
             }
             self.spin_ambient_playing = false;
         }
