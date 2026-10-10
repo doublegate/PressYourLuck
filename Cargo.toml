@@ -37,7 +37,7 @@ rust-version = "1.70"
 ggez = "0.10"
 
 # Random number generation for board patterns and trivia
-rand = "0.9"
+rand = "0.10"
 fastrand = "2.4"
 
 # Serialization for save/load functionality
