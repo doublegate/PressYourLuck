@@ -256,7 +256,7 @@ impl SpriteAtlas {
         // 256x256 frames, arranged in a grid
         let frame_size = 256u32;
         let columns = 6u32;
-        let rows = (frame_count + columns - 1) / columns;
+        let rows = frame_count.div_ceil(columns);
 
         let width = columns * frame_size;
         let height = rows * frame_size;
