@@ -6,7 +6,7 @@ Thank you for your interest in contributing to this authentic recreation of the 
 
 ### Prerequisites
 
-- Rust 1.70 or later
+- Rust 1.88 or later
 - Linux: `libasound2-dev` (ALSA development libraries)
 - macOS: No additional dependencies
 - Windows: No additional dependencies

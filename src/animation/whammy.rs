@@ -351,7 +351,7 @@ impl WhammyAnimationLibrary {
         let frame_duration = 1.0 / 24.0; // 24 FPS
         let frame_count = id.frame_count();
         let cols = 6u32;
-        let rows = (frame_count + cols - 1) / cols;
+        let rows = frame_count.div_ceil(cols);
 
         // Determine loop mode based on animation type
         let loop_mode = match id {

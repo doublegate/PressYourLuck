@@ -28,7 +28,7 @@ license = "MIT"
 readme = "README.md"
 keywords = ["game", "gameshow", "press-your-luck", "whammy", "trivia"]
 categories = ["games"]
-rust-version = "1.70"
+rust-version = "1.88"
 
 [dependencies]
 # ggez - Rust game library inspired by LOVE2D
@@ -38,7 +38,7 @@ ggez = "0.10"
 
 # Random number generation for board patterns and trivia
 rand = "0.10"
-fastrand = "2.4"
+fastrand = "2.5"
 
 # Serialization for save/load functionality
 serde = { version = "1.0", features = ["derive"] }

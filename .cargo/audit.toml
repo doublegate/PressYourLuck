@@ -1,0 +1,14 @@
+# cargo-audit configuration
+#
+# ggez 0.10.0 (latest release) depends on zip ^8 (resolved to 8.6.0) for its
+# read-only in-memory VFS archive support (`ZipArchive::by_name`). Neither
+# Press Your Luck nor ggez invokes `ZipArchive::extract` or
+# `ZipStreamReader::extract`, which are the only entry points affected by the
+# symlink/permission extraction advisories below. Remove these ignores once
+# ggez releases a version upgrading `zip` to >= 9.0.0.
+[advisories]
+ignore = [
+    "RUSTSEC-2026-0367",
+    "RUSTSEC-2026-0368",
+    "RUSTSEC-2026-0369",
+]

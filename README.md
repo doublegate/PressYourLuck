@@ -21,7 +21,7 @@ with Rod Roddy announcing and Whammy animations by Savage Steve Holland.
 
 ### Prerequisites
 
-- Rust 1.70 or later
+- Rust 1.88 or later
 - On Linux: `libasound2-dev` and `libudev-dev` (ALSA and udev development libraries)
 
 ```bash
